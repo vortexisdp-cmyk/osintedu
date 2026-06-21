@@ -155,6 +155,7 @@
             <li class="nav-item" onclick="switchTab('domain')" data-lang="nav_domain">🌐 Domain Info</li>
             <li class="nav-item" onclick="switchTab('email_search')" data-lang="nav_email_search">📧 Email Search</li>
             <li class="nav-item" onclick="switchTab('email_gen')" data-lang="nav_email_gen">📝 Email Gen</li>
+            <li class="nav-item" onclick="switchTab('ip_lookup')" data-lang="nav_ip">📍 IP Lookup</li>
         </ul>
 
         <div style="margin-top: auto; padding-top: 20px;">
@@ -175,6 +176,14 @@
     </aside>
 
     <main>
+        <section id="ip_lookup" class="hidden-section">
+    <h2 data-lang="title_ip">Аналіз IP-адреси</h2>
+    <div class="input-group">
+        <input type="text" id="ipInput" placeholder="192.168.1.1" data-placeholder="ph_ip">
+        <button onclick="checkIP()" class="btn-primary" data-lang="btn_check_ip">Перевірити</button>
+    </div>
+    <div id="ip-results" class="results-grid"></div>
+</section>
         <!-- Username Checker -->
         <section id="checker">
             <h2 data-lang="title_checker">Масова перевірка нікнейму</h2>
@@ -219,6 +228,50 @@
     </main>
 
     <script>
+
+
+    
+        function checkIP() {
+    const ip = document.getElementById('ipInput').value;
+    const resDiv = document.getElementById('ip-results');
+    resDiv.innerHTML = '';
+    if (!ip) return;
+    
+    const tools = [
+        { name: 'IPInfo.io', url: `https://ipinfo.io/${ip}` },
+        { name: 'VirusTotal IP', url: `https://www.virustotal.com/gui/ip-address/${ip}/details` },
+        { name: 'Shodan Search', url: `https://www.shodan.io/host/${ip}` }
+    ];
+    tools.forEach(t => {
+        const card = document.createElement('div');
+        card.className = 'result-card';
+       card.innerHTML = `
+    <strong>${p.name}</strong>
+    <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+        <a href="${p.url}" target="_blank">Відкрити ↗</a>
+        <button onclick="navigator.clipboard.writeText('${p.url}')" style="background:none; border:1px solid var(--emerald); color:var(--emerald); padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.8rem;">Copy</button>
+    </div>
+`;
+    });
+}
+        function toggleTheme() {
+    const root = document.documentElement;
+    const currentBg = getComputedStyle(root).getPropertyValue('--bg-main').trim();
+    
+    if (currentBg === '#0f172a') { // Если темная
+        root.style.setProperty('--bg-main', '#f8fafc');
+        root.style.setProperty('--sidebar-bg', '#ffffff');
+        root.style.setProperty('--card-bg', '#ffffff');
+        root.style.setProperty('--text-main', '#1e293b');
+        root.style.setProperty('--input-bg', '#f1f5f9');
+    } else { // Если светлая
+        root.style.setProperty('--bg-main', '#0f172a');
+        root.style.setProperty('--sidebar-bg', '#020617');
+        root.style.setProperty('--card-bg', '#1e293b');
+        root.style.setProperty('--text-main', '#e2e8f0');
+        root.style.setProperty('--input-bg', '#334155');
+    }
+}
         // 1. Логика переключения вкладок
         function switchTab(tabId) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
