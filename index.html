@@ -306,16 +306,28 @@
         </section>
 
           <!-- Generator -->
-     <section id="generators" class="hidden-section">
-    <h2 data-lang="title_gen">Генераторы</h2>
-    <div class="input-group" style="flex-direction: column;">
-        <button onclick="generateUsername()" class="btn-primary" data-lang="btn_gen_user">Генерировать ник</button>
-        <p id="username-output" style="margin: 10px 0; font-weight: bold;"></p>
-
-        <button onclick="generatePassword()" class="btn-primary" style="background: var(--gold);" data-lang="btn_gen_pass">Генерировать пароль</button>
-        <p id="password-output" style="margin: 10px 0; font-weight: bold;"></p>
+    <div class="input-group" style="flex-direction: column; gap: 15px;">
+    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        <label>Длина: <input type="number" id="pass-len" value="16" style="width: 60px;"></label><br>
+        <input type="checkbox" id="pass-upper" checked> Большие буквы
+        <input type="checkbox" id="pass-lower" checked> Маленькие
+        <input type="checkbox" id="pass-num" checked> Цифры
+        <input type="checkbox" id="pass-spec" checked> Символы (!@#)
+        <br>
+        <button onclick="generateAdvancedPassword()" class="btn-primary">Генерировать пароль</button>
+        <p id="password-output" style="font-family: monospace; font-size: 1.2rem; margin: 10px 0;"></p>
     </div>
-</section>
+
+    <div>
+        <select id="nick-style">
+            <option value="lat">Только латиница</option>
+            <option value="mix">Латиница + цифры</option>
+            <option value="pro">Профессиональный (Имя+Фамилия)</option>
+        </select>
+        <button onclick="generateAdvancedNick()" class="btn-primary">Генерировать ник</button>
+        <p id="username-output" style="font-weight: bold; margin: 10px 0;"></p>
+    </div>
+</div>
     </main>
 
     <script>
@@ -506,6 +518,32 @@ function generatePassword() {
         retVal += charset.charAt(Math.floor(Math.random() * charset.length));
     }
     document.getElementById('password-output').innerText = retVal;
+}
+        function generateAdvancedPassword() {
+    const len = document.getElementById('pass-len').value;
+    let chars = "";
+    if (document.getElementById('pass-upper').checked) chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (document.getElementById('pass-lower').checked) chars += "abcdefghijklmnopqrstuvwxyz";
+    if (document.getElementById('pass-num').checked) chars += "0123456789";
+    if (document.getElementById('pass-spec').checked) chars += "!@#$%^&*()_+";
+    
+    let pass = "";
+    for (let i = 0; i < len; i++) {
+        pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('password-output').innerText = pass;
+}
+
+function generateAdvancedNick() {
+    const style = document.getElementById('nick-style').value;
+    const parts = [['Shadow', 'Cyber', 'Ghost', 'Dark'], ['Hunter', 'Ops', 'X', 'Trace']];
+    
+    let nick = parts[0][Math.floor(Math.random() * parts[0].length)] + 
+               parts[1][Math.floor(Math.random() * parts[1].length)];
+    
+    if (style === 'mix') nick += Math.floor(Math.random() * 99);
+    
+    document.getElementById('username-output').innerText = nick;
 }
     </script>
 </body>
