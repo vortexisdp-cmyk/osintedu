@@ -3,37 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSINT Dashboard</title>
+    <title>OSINT Dashboard Pro</title>
     <style>
         :root {
-            --bg-dark: #022c22; /* Very Deep Emerald */
-            --sidebar-bg: #064e3b; /* Dark Emerald */
-            --card-bg: #ffffff;
-            --text-main: #f1f5f9;
-            --emerald-accent: #059669;
-            --gold: #d4af37;
-            --gold-hover: #b5952f;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --bg-main: #0f172a;       /* Глубокий темно-синий */
+            --sidebar-bg: #020617;    /* Почти черный синий */
+            --card-bg: #1e293b;       /* Темно-серый с синим оттенком */
+            --text-main: #e2e8f0;     /* Светло-серый текст */
+            --emerald: #059669;       /* Изумрудный */
+            --gold: #d4af37;          /* Золотой */
+            --input-bg: #334155;      /* Фон полей ввода */
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
+            background-color: var(--bg-main);
             color: var(--text-main);
             margin: 0;
             display: flex;
             min-height: 100vh;
         }
 
-        /* Боковая колонка (Sidebar) */
+        /* Боковая панель */
         .sidebar {
-            width: 280px;
+            width: 260px;
             background-color: var(--sidebar-bg);
             padding: 2rem;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            border-right: 1px solid #1e293b;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid var(--gold);
         }
 
         .logo {
@@ -42,145 +40,144 @@
             color: var(--gold);
             margin-bottom: 2rem;
             text-align: center;
-            border-bottom: 1px solid var(--emerald-accent);
-            padding-bottom: 1rem;
+            letter-spacing: 1px;
         }
 
         .nav-links { list-style: none; padding: 0; }
         .nav-item {
-            margin-bottom: 10px;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
             cursor: pointer;
             transition: 0.3s;
-            color: #a7f3d0;
+            color: #94a3b8;
             font-weight: 500;
         }
         .nav-item:hover, .nav-item.active {
-            background-color: var(--emerald-accent);
-            color: white;
-            border-left: 4px solid var(--gold);
+            background-color: rgba(5, 150, 105, 0.1);
+            color: var(--emerald);
+            border-left: 3px solid var(--emerald);
         }
 
-        .external-links { margin-top: auto; padding-top: 2rem; border-top: 1px solid #065f46; }
+        .external-links { margin-top: auto; padding-top: 2rem; border-top: 1px solid #1e293b; }
         .ext-link {
             display: block;
             color: var(--gold);
             text-decoration: none;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-size: 0.9rem;
+            opacity: 0.8;
         }
-        .ext-link:hover { text-decoration: underline; }
+        .ext-link:hover { opacity: 1; text-decoration: underline; }
 
         /* Основной контент */
-        main { flex: 1; padding: 2rem; overflow-y: auto; }
+        main { flex: 1; padding: 3rem; overflow-y: auto; }
         
-        .section-title {
-            color: var(--gold);
-            border-bottom: 2px solid var(--emerald-accent);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
+        h2 { color: var(--gold); border-bottom: 1px solid var(--emerald); padding-bottom: 10px; margin-bottom: 25px; }
 
         .hidden-section { display: none; }
 
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        input, select {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid var(--emerald-accent);
-            background: #ecfdf5;
-            border-radius: 8px;
-            outline: none;
-            color: var(--bg-dark);
+        .input-group { 
+            display: flex; 
+            gap: 15px; 
+            margin-bottom: 30px; 
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
 
+        input {
+            flex: 1;
+            padding: 14px;
+            border: 1px solid #475569;
+            background: var(--input-bg);
+            border-radius: 8px;
+            outline: none;
+            color: white;
+            font-size: 1rem;
+        }
+        input:focus { border-color: var(--emerald); }
+
         .btn-primary {
-            background-color: var(--gold);
-            color: var(--bg-dark);
+            background-color: var(--emerald);
+            color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 14px 28px;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: 700;
+            font-weight: 600;
             transition: 0.3s;
         }
-        .btn-primary:hover { background-color: var(--gold-hover); }
+        .btn-primary:hover { background-color: #047857; }
 
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
         }
 
         .result-card {
             background: var(--card-bg);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-            border-left: 4px solid var(--emerald-accent);
-            color: var(--bg-dark);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            transition: transform 0.2s;
         }
-        .result-card a { color: var(--emerald-accent); font-weight: 600; }
+        .result-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+        .result-card a { color: var(--emerald); text-decoration: none; font-weight: 600; display: block; margin-top: 10px; }
 
         ul { list-style-type: none; padding: 0; }
         li {
             background: var(--card-bg);
-            margin: 8px 0;
-            padding: 12px;
+            margin: 10px 0;
+            padding: 15px;
             border-radius: 8px;
-            color: var(--bg-dark);
+            border-left: 3px solid var(--gold);
             display: flex;
             justify-content: space-between;
         }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
-            .sidebar { width: 100%; box-sizing: border-box; }
+            .sidebar { width: 100%; padding: 1rem; box-sizing: border-box; }
+            main { padding: 1rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Левая колонка -->
     <aside class="sidebar">
-        <div class="logo">OSINT<span style="color:white">Kit</span></div>
+        <div class="logo">OSINT<span style="color:var(--emerald)">PRO</span></div>
         
         <ul class="nav-links">
             <li class="nav-item active" onclick="switchTab('checker')">🔍 Username Check</li>
             <li class="nav-item" onclick="switchTab('domain')">🌐 Domain Info</li>
             <li class="nav-item" onclick="switchTab('email')">📧 Email Gen</li>
-            <li class="nav-item" onclick="switchTab('checklist')">✅ Checklists</li>
         </ul>
 
         <div class="external-links">
-            <h4 style="color: var(--gold)">Корисні посилання:</h4>
+            <h4 style="color: var(--text-main); margin-bottom: 15px;">Ресурси:</h4>
             <a href="https://osintframework.com/" target="_blank" class="ext-link">OSINT Framework</a>
             <a href="https://haveibeenpwned.com/" target="_blank" class="ext-link">Have I Been Pwned</a>
             <a href="https://www.virustotal.com/" target="_blank" class="ext-link">VirusTotal</a>
         </div>
-        
-        <select class="lang-select" onchange="changeLanguage(this.value)" style="margin-top: 20px; width: 100%;">
-            <option value="uk">🇺🇦 UA</option>
-            <option value="ru">🇷🇺 RU</option>
-            <option value="en">🇬🇧 EN</option>
-            <option value="pt">🇧🇷 PT</option>
-        </select>
     </aside>
 
-    <!-- Основная часть -->
     <main>
+        <!-- Username Checker -->
         <section id="checker">
-            <h2 class="section-title">Перевірка нікнейму</h2>
+            <h2>Масова перевірка нікнейму</h2>
             <div class="input-group">
-                <input type="text" id="usernameInput" placeholder="@username">
-                <button onclick="checkUsername()" class="btn-primary">Пошук</button>
+                <input type="text" id="usernameInput" placeholder="Введіть нікнейм без @">
+                <button onclick="checkUsername()" class="btn-primary">Запустити пошук</button>
             </div>
             <div id="results" class="results-grid"></div>
         </section>
 
+        <!-- Domain Info -->
         <section id="domain" class="hidden-section">
-            <h2 class="section-title">Інформація про домен</h2>
+            <h2>Аналіз домену</h2>
             <div class="input-group">
                 <input type="text" id="domainInput" placeholder="example.com">
                 <button onclick="checkDomain()" class="btn-primary">Перевірити</button>
@@ -188,9 +185,95 @@
             <div id="domain-results" class="results-grid"></div>
         </section>
 
+        <!-- Email Generator -->
         <section id="email" class="hidden-section">
-            <h2 class="section-title">Генератор Email</h2>
+            <h2>Генератор корпоративних Email</h2>
             <div class="input-group">
                 <input type="text" id="firstName" placeholder="Ім'я">
                 <input type="text" id="lastName" placeholder="Прізвище">
-                <input type="text" id="
+                <input type="text" id="companyDomain" placeholder="company.com">
+            </div>
+            <button onclick="generateEmails()" class="btn-primary">Згенерувати варіанти</button>
+            <ul id="email-output" style="margin-top: 20px;"></ul>
+        </section>
+    </main>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
+            document.getElementById(tabId).classList.remove('hidden-section');
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function checkUsername() {
+            const username = document.getElementById('usernameInput').value;
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            if (!username) return alert('Будь ласка, введіть нікнейм!');
+
+            // Расширенный список сервисов
+            const platforms = [
+                { name: 'GitHub', url: `https://github.com/${username}` },
+                { name: 'Telegram', url: `https://t.me/${username}` },
+                { name: 'Instagram', url: `https://instagram.com/${username}` },
+                { name: 'Twitter / X', url: `https://twitter.com/${username}` },
+                { name: 'TikTok', url: `https://tiktok.com/@${username}` },
+                { name: 'Reddit', url: `https://www.reddit.com/user/${username}` },
+                { name: 'Keybase', url: `https://keybase.io/${username}` },
+                { name: 'Pinterest', url: `https://pinterest.com/${username}` },
+                { name: 'Twitch', url: `https://twitch.tv/${username}` },
+                { name: 'Steam', url: `https://steamcommunity.com/id/${username}` }
+            ];
+
+            platforms.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `<strong>${p.name}</strong><br><a href="${p.url}" target="_blank">Відкрити профіль ↗</a>`;
+                resultsDiv.appendChild(card);
+            });
+        }
+
+        function checkDomain() {
+            const domain = document.getElementById('domainInput').value;
+            const resDiv = document.getElementById('domain-results');
+            resDiv.innerHTML = '';
+            if (!domain) return;
+            const tools = [
+                { name: 'Whois Lookup', url: `https://who.is/${domain}` },
+                { name: 'DNS Records', url: `https://dnschecker.org/dns-lookup.php?host=${domain}` },
+                { name: 'VirusTotal Scan', url: `https://www.virustotal.com/gui/domain/${domain}/details` }
+            ];
+            tools.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `<strong>${t.name}</strong><br><a href="${t.url}" target="_blank">Детальний звіт ↗</a>`;
+                resDiv.appendChild(card);
+            });
+        }
+
+        function generateEmails() {
+            const f = document.getElementById('firstName').value.toLowerCase();
+            const l = document.getElementById('lastName').value.toLowerCase();
+            const d = document.getElementById('companyDomain').value;
+            const output = document.getElementById('email-output');
+            output.innerHTML = '';
+            if (!f || !l || !d) return;
+            
+            const patterns = [
+                `${f}.${l}@${d}`, 
+                `${f}${l}@${d}`, 
+                `${f}_${l}@${d}`, 
+                `${f.substring(0,1)}${l}@${d}`,
+                `${f}@${d}`
+            ];
+
+            patterns.forEach(email => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${email}</span> <button onclick="navigator.clipboard.writeText('${email}')" style="background:none;color:var(--emerald);border:none;cursor:pointer;font-weight:bold">Copy</button>`;
+                output.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
