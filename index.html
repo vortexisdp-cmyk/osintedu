@@ -543,7 +543,7 @@
 
         const platforms = [
             { name: 'GitHub', url: `https://github.com/${username}` },
-            { name: 'Telegram', url: `https://t.me/${username}` },
+           { name: 'Telegram', url: `tg://resolve?domain=${username}` },
             { name: 'Instagram', url: `https://instagram.com/${username}` },
             { name: 'Twitter / X', url: `https://twitter.com/${username}` },
             { name: 'TikTok', url: `https://tiktok.com/@${username}` },
@@ -583,22 +583,50 @@
         });
     }
 
-    function checkIP() {
-        const ip = document.getElementById('ipInput').value.trim();
-        const resDiv = document.getElementById('ip-results');
+   async function checkIP() {
+    const ip = document.getElementById('ipInput').value.trim();
+    const resDiv = document.getElementById('ip-results');
+    resDiv.innerHTML = '<div style="color:var(--text-secondary);padding:10px">⏳ Завантаження...</div>';
+    if (!ip) { resDiv.innerHTML = ''; return; }
+    try {
+        const res = await fetch(`https://ipinfo.io/${ip}/json`);
+        const d = await res.json();
+        if (d.error) throw new Error(d.error.message);
+        const fields = [
+            { label: '🌐 IP', value: d.ip },
+            { label: '🏙 Місто', value: d.city || '—' },
+            { label: '🗺 Регіон', value: d.region || '—' },
+            { label: '🇺🇦 Країна', value: d.country || '—' },
+            { label: '📡 Провайдер', value: d.org || '—' },
+            { label: '🕐 Таймзона', value: d.timezone || '—' },
+            { label: '📍 Координати', value: d.loc || '—' },
+            { label: '📮 Поштовий', value: d.postal || '—' },
+        ];
         resDiv.innerHTML = '';
-        if (!ip) return;
-        [
-            { name: 'IPInfo.io', url: `https://ipinfo.io/${ip}` },
-            { name: 'VirusTotal IP', url: `https://www.virustotal.com/gui/ip-address/${ip}/details` },
-            { name: 'Shodan Search', url: `https://www.shodan.io/host/${ip}` }
-        ].forEach(t => {
+        fields.forEach(f => {
             const card = document.createElement('div');
             card.className = 'result-card';
-            card.innerHTML = `<strong>${t.name}</strong><button class="copy-btn" onclick="navigator.clipboard.writeText('${t.url}')">Copy</button><a href="${t.url}" target="_blank">Деталі ↗</a>`;
+            card.innerHTML = `
+                <strong style="font-size:0.8rem;color:var(--text-secondary);padding-right:0">${f.label}</strong>
+                <div style="color:var(--text-primary);font-size:1rem;margin-top:6px;font-weight:600">${f.value}</div>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText('${f.value}')">Copy</button>
+            `;
             resDiv.appendChild(card);
         });
+        const linksWrap = document.createElement('div');
+        linksWrap.style.cssText = 'grid-column:1/-1;display:flex;gap:12px;flex-wrap:wrap;margin-top:4px';
+        [
+            { name: 'VirusTotal', url: `https://www.virustotal.com/gui/ip-address/${ip}/details` },
+            { name: 'Shodan', url: `https://www.shodan.io/host/${ip}` },
+            { name: 'AbuseIPDB', url: `https://www.abuseipdb.com/check/${ip}` }
+        ].forEach(t => {
+            linksWrap.innerHTML += `<a href="${t.url}" target="_blank" style="color:var(--gold);font-size:0.9rem;font-weight:600;text-decoration:none;border:1px solid var(--border-color);padding:8px 14px;border-radius:8px">${t.name} ↗</a>`;
+        });
+        resDiv.appendChild(linksWrap);
+    } catch(e) {
+        resDiv.innerHTML = `<div style="color:#f87171;padding:10px">❌ Помилка: ${e.message}</div>`;
     }
+}
 
     function searchEmail() {
         const email = document.getElementById('emailSearchInput').value.trim();
