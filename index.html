@@ -361,5 +361,54 @@
             });
         }
     </script>
+        <script>
+        // Словарь переводов
+        const translations = {
+            uk: {
+                nav_checker: "🔍 Перевірка нікнейму", nav_domain: "🌐 Домен", nav_email: "📧 Email",
+                resources: "Корисні посилання:",
+                title_checker: "Масова перевірка нікнейму", ph_username: "Введіть нікнейм без @", btn_search: "Запустити пошук",
+                title_domain: "Аналіз домену", ph_domain: "example.com", btn_check: "Перевірити",
+                title_email: "Генератор корпоративних Email", ph_fname: "Ім'я", ph_lname: "Прізвище", ph_cdomain: "company.com", btn_gen: "Згенерувати варіанти"
+            },
+            ru: {
+                nav_checker: "🔍 Проверка никнейма", nav_domain: "🌐 Домен", nav_email: "📧 Email",
+                resources: "Полезные ссылки:",
+                title_checker: "Массовая проверка никнейма", ph_username: "Введите никнейм без @", btn_search: "Запустить поиск",
+                title_domain: "Анализ домена", ph_domain: "example.com", btn_check: "Проверить",
+                title_email: "Генератор корпоративных Email", ph_fname: "Имя", ph_lname: "Фамилия", ph_cdomain: "company.com", btn_gen: "Сгенерировать варианты"
+            },
+            en: {
+                nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain", nav_email: "📧 Email",
+                resources: "Useful Links:",
+                title_checker: "Mass Username Check", ph_username: "Enter username without @", btn_search: "Start Search",
+                title_domain: "Domain Analysis", ph_domain: "example.com", btn_check: "Check",
+                title_email: "Corporate Email Generator", ph_fname: "First Name", ph_lname: "Last Name", ph_cdomain: "company.com", btn_gen: "Generate Variants"
+            },
+            pt: {
+                nav_checker: "🔍 Verificar Usuário", nav_domain: "🌐 Domínio", nav_email: "📧 Email",
+                resources: "Links Úteis:",
+                title_checker: "Verificação em Massa", ph_username: "Digite o usuário sem @", btn_search: "Iniciar Busca",
+                title_domain: "Análise de Domínio", ph_domain: "exemplo.com", btn_check: "Verificar",
+                title_email: "Gerador de E-mail Corporativo", ph_fname: "Nome", ph_lname: "Sobrenome", ph_cdomain: "empresa.com", btn_gen: "Gerar Variantes"
+            }
+        };
+
+        function changeLanguage(lang) {
+            const t = translations[lang];
+            
+            // Обновляем текст элементов
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.getAttribute('data-lang');
+                if (t[key]) el.innerText = t[key];
+            });
+
+            // Обновляем плейсхолдеры (подсказки в полях)
+            document.querySelectorAll('[data-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-placeholder');
+                if (t[key]) el.placeholder = t[key];
+            });
+        }
+    </script>
 </body>
 </html>
