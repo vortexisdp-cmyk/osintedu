@@ -1,93 +1,115 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSINT Starter Kit</title>
+    <title>OSINT Dashboard</title>
     <style>
         :root {
-            --bg-color: #f8fafc;
+            --bg-dark: #022c22; /* Very Deep Emerald */
+            --sidebar-bg: #064e3b; /* Dark Emerald */
             --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --emerald: #059669; /* Deep Emerald */
-            --gold: #d4af37;   /* Gold Accent */
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --text-main: #f1f5f9;
+            --emerald-accent: #059669;
+            --gold: #d4af37;
+            --gold-hover: #b5952f;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
+            background-color: var(--bg-dark);
             color: var(--text-main);
             margin: 0;
             display: flex;
-            flex-direction: column;
             min-height: 100vh;
         }
 
-        header {
-            background: var(--card-bg);
-            padding: 1rem 2rem;
-            box-shadow: var(--shadow);
+        /* Боковая колонка (Sidebar) */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            padding: 2rem;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            border-right: 1px solid var(--gold);
         }
 
-        .logo { font-weight: 700; font-size: 1.5rem; }
-        .gold { color: var(--gold); }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--emerald-accent);
+            padding-bottom: 1rem;
+        }
 
-        nav button {
-            background: none;
-            border: none;
-            padding: 0.5rem 1rem;
+        .nav-links { list-style: none; padding: 0; }
+        .nav-item {
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
-            color: #64748b;
             transition: 0.3s;
+            color: #a7f3d0;
+            font-weight: 500;
+        }
+        .nav-item:hover, .nav-item.active {
+            background-color: var(--emerald-accent);
+            color: white;
+            border-left: 4px solid var(--gold);
         }
 
-        nav button.active { color: var(--emerald); border-bottom: 2px solid var(--emerald); }
+        .external-links { margin-top: auto; padding-top: 2rem; border-top: 1px solid #065f46; }
+        .ext-link {
+            display: block;
+            color: var(--gold);
+            text-decoration: none;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .ext-link:hover { text-decoration: underline; }
 
-        main { flex: 1; padding: 2rem; max-width: 800px; margin: 0 auto; width: 100%; }
+        /* Основной контент */
+        main { flex: 1; padding: 2rem; overflow-y: auto; }
+        
+        .section-title {
+            color: var(--gold);
+            border-bottom: 2px solid var(--emerald-accent);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
 
         .hidden-section { display: none; }
 
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-
-        input {
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        input, select {
             flex: 1;
             padding: 12px;
-            border: 1px solid #cbd5e1;
+            border: 1px solid var(--emerald-accent);
+            background: #ecfdf5;
             border-radius: 8px;
             outline: none;
+            color: var(--bg-dark);
         }
-
-        input:focus { border-color: var(--emerald); }
 
         .btn-primary {
-            background-color: var(--emerald);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .btn-secondary {
             background-color: var(--gold);
-            color: white;
+            color: var(--bg-dark);
             border: none;
             padding: 12px 24px;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
-            margin-top: 15px;
+            font-weight: 700;
+            transition: 0.3s;
         }
+        .btn-primary:hover { background-color: var(--gold-hover); }
 
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 15px;
         }
 
@@ -96,91 +118,79 @@
             padding: 15px;
             border-radius: 8px;
             box-shadow: var(--shadow);
-            border-left: 4px solid var(--gold);
+            border-left: 4px solid var(--emerald-accent);
+            color: var(--bg-dark);
+        }
+        .result-card a { color: var(--emerald-accent); font-weight: 600; }
+
+        ul { list-style-type: none; padding: 0; }
+        li {
+            background: var(--card-bg);
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--bg-dark);
+            display: flex;
+            justify-content: space-between;
         }
 
-        .disclaimer { font-size: 0.8rem; color: #94a3b8; margin-top: 20px; }
-
-        footer { text-align: center; padding: 1rem; font-size: 0.9rem; color: #64748b; }
-        
-        ul { list-style-type: none; padding: 0; }
-        li { background: var(--card-bg); margin: 5px 0; padding: 10px; border-radius: 5px; box-shadow: var(--shadow); }
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; box-sizing: border-box; }
+        }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">OSINT<span class="gold">Kit</span></div>
-        <nav>
-            <button class="tab-btn active" onclick="switchTab('checker', this)">Username Checker</button>
-            <button class="tab-btn" onclick="switchTab('checklist', this)">Checklist Gen</button>
-        </nav>
-    </header>
 
+    <!-- Левая колонка -->
+    <aside class="sidebar">
+        <div class="logo">OSINT<span style="color:white">Kit</span></div>
+        
+        <ul class="nav-links">
+            <li class="nav-item active" onclick="switchTab('checker')">🔍 Username Check</li>
+            <li class="nav-item" onclick="switchTab('domain')">🌐 Domain Info</li>
+            <li class="nav-item" onclick="switchTab('email')">📧 Email Gen</li>
+            <li class="nav-item" onclick="switchTab('checklist')">✅ Checklists</li>
+        </ul>
+
+        <div class="external-links">
+            <h4 style="color: var(--gold)">Корисні посилання:</h4>
+            <a href="https://osintframework.com/" target="_blank" class="ext-link">OSINT Framework</a>
+            <a href="https://haveibeenpwned.com/" target="_blank" class="ext-link">Have I Been Pwned</a>
+            <a href="https://www.virustotal.com/" target="_blank" class="ext-link">VirusTotal</a>
+        </div>
+        
+        <select class="lang-select" onchange="changeLanguage(this.value)" style="margin-top: 20px; width: 100%;">
+            <option value="uk">🇺🇦 UA</option>
+            <option value="ru">🇷🇺 RU</option>
+            <option value="en">🇬🇧 EN</option>
+            <option value="pt">🇧🇷 PT</option>
+        </select>
+    </aside>
+
+    <!-- Основная часть -->
     <main>
-        <!-- Вкладка 1: Проверка юзернеймов -->
         <section id="checker">
-            <h2>Проверка доступности Username</h2>
+            <h2 class="section-title">Перевірка нікнейму</h2>
             <div class="input-group">
-                <input type="text" id="usernameInput" placeholder="Введите никнейм (например, user123)">
-                <button onclick="checkUsername()" class="btn-primary">Проверить</button>
+                <input type="text" id="usernameInput" placeholder="@username">
+                <button onclick="checkUsername()" class="btn-primary">Пошук</button>
             </div>
             <div id="results" class="results-grid"></div>
-            <p class="disclaimer">* Проверяются только открытые API. Остальные — прямые ссылки для ручной проверки.</p>
         </section>
 
-        <!-- Вкладка 2: Генератор чеклистов -->
-        <section id="checklist" class="hidden-section">
-            <h2>Генератор OSINT Чеклиста</h2>
-            <div class="filters">
-                <label><input type="checkbox" value="person" checked> Человек</label>
-                <label><input type="checkbox" value="company" checked> Компания</label>
-                <label><input type="checkbox" value="geo" checked> Геолокация</label>
+        <section id="domain" class="hidden-section">
+            <h2 class="section-title">Інформація про домен</h2>
+            <div class="input-group">
+                <input type="text" id="domainInput" placeholder="example.com">
+                <button onclick="checkDomain()" class="btn-primary">Перевірити</button>
             </div>
-            <button onclick="generateChecklist()" class="btn-secondary">Сформировать список</button>
-            <ul id="checklist-output"></ul>
+            <div id="domain-results" class="results-grid"></div>
         </section>
-    </main>
 
-    <footer>
-        <p>Tool uses only publicly available data. No private information is stored.</p>
-    </footer>
-
-    <script>
-        function switchTab(tabId, btn) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
-            document.getElementById(tabId).classList.remove('hidden-section');
-            
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        function checkUsername() {
-            const username = document.getElementById('usernameInput').value;
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '';
-
-            if (!username) return alert('Введите имя!');
-
-            const platforms = [
-                { name: 'GitHub', url: `https://github.com/${username}` },
-                { name: 'Keybase', url: `https://keybase.io/${username}` },
-                { name: 'Reddit', url: `https://www.reddit.com/user/${username}` },
-                { name: 'Twitter/X', url: `https://twitter.com/${username}` },
-                { name: 'Instagram', url: `https://instagram.com/${username}` }
-            ];
-
-            platforms.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'result-card';
-                card.innerHTML = `<strong>${p.name}</strong><br><a href="${p.url}" target="_blank" style="color:var(--emerald)">Открыть профиль</a>`;
-                resultsDiv.appendChild(card);
-            });
-        }
-
-        function generateChecklist() {
-            const output = document.getElementById('checklist-output');
-            output.innerHTML = '<li>🔍 Поиск по email (HaveIBeenPwned)</li><li>📸 Анализ аватарок (PimEyes)</li><li>🌍 Поиск по геоданным (GeoGuessr tools)</li>';
-        }
-    </script>
-</body>
-</html>
+        <section id="email" class="hidden-section">
+            <h2 class="section-title">Генератор Email</h2>
+            <div class="input-group">
+                <input type="text" id="firstName" placeholder="Ім'я">
+                <input type="text" id="lastName" placeholder="Прізвище">
+                <input type="text" id="
