@@ -87,7 +87,7 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
 
-        input {
+        input, select {
             flex: 1;
             padding: 14px;
             border: 1px solid #475569;
@@ -147,16 +147,16 @@
 </head>
 <body>
 
-       <aside class="sidebar">
+    <aside class="sidebar">
         <div class="logo">OSINT<span style="color:var(--emerald)">PRO</span></div>
         
         <ul class="nav-links">
             <li class="nav-item active" onclick="switchTab('checker')" data-lang="nav_checker">🔍 Username Check</li>
             <li class="nav-item" onclick="switchTab('domain')" data-lang="nav_domain">🌐 Domain Info</li>
-            <li class="nav-item" onclick="switchTab('email')" data-lang="nav_email">📧 Email Gen</li>
+            <li class="nav-item" onclick="switchTab('email_search')" data-lang="nav_email_search">📧 Email Search</li>
+            <li class="nav-item" onclick="switchTab('email_gen')" data-lang="nav_email_gen">📝 Email Gen</li>
         </ul>
 
-        <!-- Компактный переключатель языков -->
         <div style="margin-top: auto; padding-top: 20px;">
             <select id="langSwitcher" onchange="changeLanguage(this.value)" style="width: 100%; padding: 8px; background: var(--input-bg); color: white; border: 1px solid #475569; border-radius: 6px;">
                 <option value="uk">🇺🇦 Українська</option>
@@ -170,59 +170,70 @@
             <h4 style="color: var(--text-main); margin-bottom: 15px;" data-lang="resources">Ресурси:</h4>
             <a href="https://osintframework.com/" target="_blank" class="ext-link">OSINT Framework</a>
             <a href="https://haveibeenpwned.com/" target="_blank" class="ext-link">Have I Been Pwned</a>
-            <a href="https://www.virustotal.com/" target="_blank" class="ext-link">VirusTotal</a>
         </div>
     </aside>
 
     <main>
         <!-- Username Checker -->
         <section id="checker">
-            <h2>Масова перевірка нікнейму</h2>
+            <h2 data-lang="title_checker">Масова перевірка нікнейму</h2>
             <div class="input-group">
-                <input type="text" id="usernameInput" placeholder="Введіть нікнейм без @">
-                <button onclick="checkUsername()" class="btn-primary">Запустити пошук</button>
+                <input type="text" id="usernameInput" placeholder="Введіть нікнейм без @" data-placeholder="ph_username">
+                <button onclick="checkUsername()" class="btn-primary" data-lang="btn_search">Запустити пошук</button>
             </div>
             <div id="results" class="results-grid"></div>
         </section>
 
         <!-- Domain Info -->
         <section id="domain" class="hidden-section">
-            <h2>Аналіз домену</h2>
+            <h2 data-lang="title_domain">Аналіз домену</h2>
             <div class="input-group">
-                <input type="text" id="domainInput" placeholder="example.com">
-                <button onclick="checkDomain()" class="btn-primary">Перевірити</button>
+                <input type="text" id="domainInput" placeholder="example.com" data-placeholder="ph_domain">
+                <button onclick="checkDomain()" class="btn-primary" data-lang="btn_check">Перевірити</button>
             </div>
             <div id="domain-results" class="results-grid"></div>
         </section>
 
-        <!-- Email Generator -->
-        <section id="email" class="hidden-section">
-            <h2>Генератор корпоративних Email</h2>
+        <!-- Email Search (New) -->
+        <section id="email_search" class="hidden-section">
+            <h2 data-lang="title_email_search">Пошук по Email</h2>
             <div class="input-group">
-                <input type="text" id="firstName" placeholder="Ім'я">
-                <input type="text" id="lastName" placeholder="Прізвище">
-                <input type="text" id="companyDomain" placeholder="company.com">
+                <input type="email" id="emailSearchInput" placeholder="target@example.com" data-placeholder="ph_email_target">
+                <button onclick="searchEmail()" class="btn-primary" data-lang="btn_analyze">Аналізувати</button>
             </div>
-            <button onclick="generateEmails()" class="btn-primary">Згенерувати варіанти</button>
+            <div id="email-search-results" class="results-grid"></div>
+        </section>
+
+        <!-- Email Generator -->
+        <section id="email_gen" class="hidden-section">
+            <h2 data-lang="title_email_gen">Генератор Email</h2>
+            <div class="input-group">
+                <input type="text" id="firstName" placeholder="Ім'я" data-placeholder="ph_fname">
+                <input type="text" id="lastName" placeholder="Прізвище" data-placeholder="ph_lname">
+                <input type="text" id="companyDomain" placeholder="company.com" data-placeholder="ph_cdomain">
+            </div>
+            <button onclick="generateEmails()" class="btn-primary" data-lang="btn_gen">Згенерувати</button>
             <ul id="email-output" style="margin-top: 20px;"></ul>
         </section>
     </main>
 
     <script>
+        // 1. Логика переключения вкладок
         function switchTab(tabId) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
             document.getElementById(tabId).classList.remove('hidden-section');
+            
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
         }
 
+        // 2. Логика инструментов
         function checkUsername() {
             const username = document.getElementById('usernameInput').value;
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '';
             if (!username) return alert('Будь ласка, введіть нікнейм!');
 
-            // Расширенный список сервисов
             const platforms = [
                 { name: 'GitHub', url: `https://github.com/${username}` },
                 { name: 'Telegram', url: `https://t.me/${username}` },
@@ -262,6 +273,26 @@
             });
         }
 
+        function searchEmail() {
+            const email = document.getElementById('emailSearchInput').value;
+            const resDiv = document.getElementById('email-search-results');
+            resDiv.innerHTML = '';
+            if (!email) return;
+
+            const tools = [
+                { name: 'Have I Been Pwned', url: `https://haveibeenpwned.com/account/${email}` },
+                { name: 'Hunter.io (Verify)', url: `https://hunter.io/email-verifier/${email}` },
+                { name: 'Epieos (Google/Skype)', url: `https://epieos.com/?q=${email}` }
+            ];
+
+            tools.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `<strong>${t.name}</strong><br><a href="${t.url}" target="_blank">Перевірити ↗</a>`;
+                resDiv.appendChild(card);
+            });
+        }
+
         function generateEmails() {
             const f = document.getElementById('firstName').value.toLowerCase();
             const l = document.getElementById('lastName').value.toLowerCase();
@@ -270,64 +301,60 @@
             output.innerHTML = '';
             if (!f || !l || !d) return;
             
-            const patterns = [
-                `${f}.${l}@${d}`, 
-                `${f}${l}@${d}`, 
-                `${f}_${l}@${d}`, 
-                `${f.substring(0,1)}${l}@${d}`,
-                `${f}@${d}`
-            ];
-
+            const patterns = [`${f}.${l}@${d}`, `${f}${l}@${d}`, `${f}_${l}@${d}`, `${f.substring(0,1)}${l}@${d}`];
             patterns.forEach(email => {
                 const li = document.createElement('li');
                 li.innerHTML = `<span>${email}</span> <button onclick="navigator.clipboard.writeText('${email}')" style="background:none;color:var(--emerald);border:none;cursor:pointer;font-weight:bold">Copy</button>`;
                 output.appendChild(li);
             });
         }
-    </script>
-        <script>
-        // Словарь переводов
+
+        // 3. Логика Локализации (Исправленная)
         const translations = {
             uk: {
-                nav_checker: "🔍 Перевірка нікнейму", nav_domain: "🌐 Домен", nav_email: "📧 Email",
+                nav_checker: "🔍 Перевірка нікнейму", nav_domain: "🌐 Домен", nav_email_search: "📧 Пошук Email", nav_email_gen: "📝 Генератор",
                 resources: "Корисні посилання:",
                 title_checker: "Масова перевірка нікнейму", ph_username: "Введіть нікнейм без @", btn_search: "Запустити пошук",
                 title_domain: "Аналіз домену", ph_domain: "example.com", btn_check: "Перевірити",
-                title_email: "Генератор корпоративних Email", ph_fname: "Ім'я", ph_lname: "Прізвище", ph_cdomain: "company.com", btn_gen: "Згенерувати варіанти"
+                title_email_search: "Пошук інформації по Email", ph_email_target: "target@example.com", btn_analyze: "Аналізувати",
+                title_email_gen: "Генератор корпоративних Email", ph_fname: "Ім'я", ph_lname: "Прізвище", ph_cdomain: "company.com", btn_gen: "Згенерувати"
             },
             ru: {
-                nav_checker: "🔍 Проверка никнейма", nav_domain: "🌐 Домен", nav_email: "📧 Email",
+                nav_checker: "🔍 Проверка никнейма", nav_domain: "🌐 Домен", nav_email_search: "📧 Поиск Email", nav_email_gen: "📝 Генератор",
                 resources: "Полезные ссылки:",
                 title_checker: "Массовая проверка никнейма", ph_username: "Введите никнейм без @", btn_search: "Запустить поиск",
                 title_domain: "Анализ домена", ph_domain: "example.com", btn_check: "Проверить",
-                title_email: "Генератор корпоративных Email", ph_fname: "Имя", ph_lname: "Фамилия", ph_cdomain: "company.com", btn_gen: "Сгенерировать варианты"
+                title_email_search: "Поиск информации по Email", ph_email_target: "target@example.com", btn_analyze: "Анализировать",
+                title_email_gen: "Генератор корпоративных Email", ph_fname: "Имя", ph_lname: "Фамилия", ph_cdomain: "company.com", btn_gen: "Сгенерировать"
             },
             en: {
-                nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain", nav_email: "📧 Email",
+                nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain", nav_email_search: "📧 Email Search", nav_email_gen: "📝 Generator",
                 resources: "Useful Links:",
                 title_checker: "Mass Username Check", ph_username: "Enter username without @", btn_search: "Start Search",
                 title_domain: "Domain Analysis", ph_domain: "example.com", btn_check: "Check",
-                title_email: "Corporate Email Generator", ph_fname: "First Name", ph_lname: "Last Name", ph_cdomain: "company.com", btn_gen: "Generate Variants"
+                title_email_search: "Email Information Search", ph_email_target: "target@example.com", btn_analyze: "Analyze",
+                title_email_gen: "Corporate Email Generator", ph_fname: "First Name", ph_lname: "Last Name", ph_cdomain: "company.com", btn_gen: "Generate"
             },
             pt: {
-                nav_checker: "🔍 Verificar Usuário", nav_domain: "🌐 Domínio", nav_email: "📧 Email",
+                nav_checker: "🔍 Verificar Usuário", nav_domain: "🌐 Domínio", nav_email_search: "📧 Buscar Email", nav_email_gen: "📝 Gerador",
                 resources: "Links Úteis:",
                 title_checker: "Verificação em Massa", ph_username: "Digite o usuário sem @", btn_search: "Iniciar Busca",
                 title_domain: "Análise de Domínio", ph_domain: "exemplo.com", btn_check: "Verificar",
-                title_email: "Gerador de E-mail Corporativo", ph_fname: "Nome", ph_lname: "Sobrenome", ph_cdomain: "empresa.com", btn_gen: "Gerar Variantes"
+                title_email_search: "Busca por Email", ph_email_target: "alvo@exemplo.com", btn_analyze: "Analisar",
+                title_email_gen: "Gerador de E-mail Corporativo", ph_fname: "Nome", ph_lname: "Sobrenome", ph_cdomain: "empresa.com", btn_gen: "Gerar"
             }
         };
 
         function changeLanguage(lang) {
             const t = translations[lang];
             
-            // Обновляем текст элементов
+            // Обновляем текст элементов по атрибуту data-lang
             document.querySelectorAll('[data-lang]').forEach(el => {
                 const key = el.getAttribute('data-lang');
                 if (t[key]) el.innerText = t[key];
             });
 
-            // Обновляем плейсхолдеры (подсказки в полях)
+            // Обновляем плейсхолдеры (подсказки в полях) по атрибуту data-placeholder
             document.querySelectorAll('[data-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-placeholder');
                 if (t[key]) el.placeholder = t[key];
