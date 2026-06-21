@@ -188,15 +188,16 @@
         }
 
         select {
-            width: 100%;
-            padding: 9px 12px;
-            background: var(--input-bg);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
+    width: 100%;
+    padding: 9px 12px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color-scheme: dark;
+}
 
         .theme-btn-side {
             width: 100%;
@@ -518,7 +519,52 @@
         </main>
     </div>
 </div>
+     <!-- DNS Lookup -->
+            <section id="dns_lookup">
+                <div class="section-title">🔎 DNS Lookup</div>
+                <div class="input-row">
+                    <input class="input-field" type="text" id="dnsInput" placeholder="example.com">
+                    <select class="input-field" id="dnsType" style="flex:0 0 120px;color-scheme:dark">
+                        <option value="A">A</option>
+                        <option value="MX">MX</option>
+                        <option value="TXT">TXT</option>
+                        <option value="NS">NS</option>
+                        <option value="AAAA">AAAA</option>
+                        <option value="CNAME">CNAME</option>
+                    </select>
+                    <button class="btn" onclick="checkDNS()">Запит</button>
+                </div>
+                <div id="dns-results"></div>
+            </section>
 
+            <!-- SSL Check -->
+            <section id="ssl_check">
+                <div class="section-title">🔒 SSL / Сертифікати</div>
+                <div class="input-row">
+                    <input class="input-field" type="text" id="sslInput" placeholder="example.com">
+                    <button class="btn" onclick="checkSSL()">Перевірити</button>
+                </div>
+                <div id="ssl-results"></div>
+            </section>
+
+            <!-- Hash Tool -->
+            <section id="hash_tool">
+                <div class="section-title">🔐 Hash Tool</div>
+                <div class="input-row" style="flex-direction:column;gap:12px">
+                    <textarea class="input-field" id="hashInput" placeholder="Введіть текст для хешування..." rows="3" style="resize:vertical"></textarea>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                        <button class="btn" onclick="hashText('SHA-1')">SHA-1</button>
+                        <button class="btn" onclick="hashText('SHA-256')">SHA-256</button>
+                        <button class="btn" onclick="hashText('SHA-512')">SHA-512</button>
+                    </div>
+                </div>
+                <div id="hash-results"></div>
+            </section>
+
+        </main>
+    </div>
+</div>
+    
 <script>
     // ─── TAB SWITCH ───
     function switchTab(tabId, btn) {
