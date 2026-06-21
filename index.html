@@ -221,6 +221,7 @@
             <li class="nav-item" onclick="switchTab('ip_lookup')" data-lang="nav_ip">📍 IP Lookup</li>
             <li class="nav-item" onclick="switchTab('email_search')" data-lang="nav_email_search">📧 Email Search</li>
             <li class="nav-item" onclick="switchTab('email_gen')" data-lang="nav_email_gen">📝 Email Gen</li>
+            <li class="nav-item" onclick="switchTab('generators')" data-lang="nav_gens">⚙️ Generators</li>
         </ul>
 
         <div class="controls-area">
@@ -304,13 +305,14 @@
             <ul id="email-output" style="margin-top: 20px;"></ul>
         </section>
 
-        <section id="generators" class="hidden-section">
+          <!-- Generator -->
+     <section id="generators" class="hidden-section">
     <h2 data-lang="title_gen">Генераторы</h2>
     <div class="input-group" style="flex-direction: column;">
-        <button onclick="generateUsername()" class="btn-primary">Генерировать никнейм</button>
+        <button onclick="generateUsername()" class="btn-primary" data-lang="btn_gen_user">Генерировать ник</button>
         <p id="username-output" style="margin: 10px 0; font-weight: bold;"></p>
-        
-        <button onclick="generatePassword()" class="btn-primary" style="background: var(--gold);">Генерировать пароль</button>
+
+        <button onclick="generatePassword()" class="btn-primary" style="background: var(--gold);" data-lang="btn_gen_pass">Генерировать пароль</button>
         <p id="password-output" style="margin: 10px 0; font-weight: bold;"></p>
     </div>
 </section>
@@ -437,43 +439,46 @@
         // 4. Локализация
         const translations = {
             uk: {
-                nav_checker: "🔍 Перевірка нікнейму", nav_domain: "🌐 Домен", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Пошук Email", nav_email_gen: "📝 Генератор",
+                nav_checker: "🔍 Перевірка нікнейму", nav_domain: "🌐 Домен", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Пошук Email", nav_email_gen: "📝 Генератор", nav_gens: "⚙️ Генератори",
                 resources: "Корисні посилання:", btn_theme: "🌓 Змінити тему",
                 title_checker: "Масова перевірка нікнейму", ph_username: "Введіть нікнейм без @", btn_search: "Запустити пошук",
                 title_domain: "Аналіз домену", ph_domain: "example.com", btn_check: "Перевірити",
                 title_ip: "Аналіз IP-адреси", ph_ip: "192.168.1.1", btn_check_ip: "Перевірити",
                 title_email_search: "Пошук інформації по Email", ph_email_target: "target@example.com", btn_analyze: "Аналізувати",
-                title_email_gen: "Генератор корпоративних Email", ph_fname: "Ім'я", ph_lname: "Прізвище", ph_cdomain: "company.com", btn_gen: "Згенерувати"
+                title_email_gen: "Генератор корпоративних Email", ph_fname: "Ім'я", ph_lname: "Прізвище", ph_cdomain: "company.com", btn_gen: "Згенерувати",
+                title_gen: "Генератори"
             },
             ru: {
-                nav_checker: "🔍 Проверка никнейма", nav_domain: "🌐 Домен", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Поиск Email", nav_email_gen: "📝 Генератор",
+                nav_checker: "🔍 Проверка никнейма", nav_domain: "🌐 Домен", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Поиск Email", nav_email_gen: "📝 Генератор", nav_gens: "⚙️ Генераторы",
                 resources: "Полезные ссылки:", btn_theme: "🌓 Сменить тему",
                 title_checker: "Массовая проверка никнейма", ph_username: "Введите никнейм без @", btn_search: "Запустить поиск",
                 title_domain: "Анализ домена", ph_domain: "example.com", btn_check: "Проверить",
                 title_ip: "Анализ IP-адреса", ph_ip: "192.168.1.1", btn_check_ip: "Проверить",
                 title_email_search: "Поиск информации по Email", ph_email_target: "target@example.com", btn_analyze: "Анализировать",
-                title_email_gen: "Генератор корпоративных Email", ph_fname: "Имя", ph_lname: "Фамилия", ph_cdomain: "company.com", btn_gen: "Сгенерировать"
+                title_email_gen: "Генератор корпоративных Email", ph_fname: "Имя", ph_lname: "Фамилия", ph_cdomain: "company.com", btn_gen: "Сгенерировать",
+                title_gen: "Генераторы"
             },
             en: {
-                nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Email Search", nav_email_gen: "📝 Generator",
+                nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Email Search", nav_email_gen: "📝 Generator", nav_gens: "⚙️ Generators",
                 resources: "Useful Links:", btn_theme: "🌓 Toggle Theme",
                 title_checker: "Mass Username Check", ph_username: "Enter username without @", btn_search: "Start Search",
                 title_domain: "Domain Analysis", ph_domain: "example.com", btn_check: "Check",
                 title_ip: "IP Address Analysis", ph_ip: "192.168.1.1", btn_check_ip: "Check",
                 title_email_search: "Email Information Search", ph_email_target: "target@example.com", btn_analyze: "Analyze",
-                title_email_gen: "Corporate Email Generator", ph_fname: "First Name", ph_lname: "Last Name", ph_cdomain: "company.com", btn_gen: "Generate"
+                title_email_gen: "Corporate Email Generator", ph_fname: "First Name", ph_lname: "Last Name", ph_cdomain: "company.com", btn_gen: "Generate",
+                title_gen: "Generators"
             },
             pt: {
-                nav_checker: "🔍 Verificar Usuário", nav_domain: "🌐 Domínio", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Buscar Email", nav_email_gen: "📝 Gerador",
+                nav_checker: "🔍 Verificar Usuário", nav_domain: "🌐 Domínio", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Buscar Email", nav_email_gen: "📝 Gerador", nav_gens: "⚙️ Geradores",
                 resources: "Links Úteis:", btn_theme: "🌓 Mudar Tema",
                 title_checker: "Verificação em Massa", ph_username: "Digite o usuário sem @", btn_search: "Iniciar Busca",
                 title_domain: "Análise de Domínio", ph_domain: "exemplo.com", btn_check: "Verificar",
                 title_ip: "Análise de IP", ph_ip: "192.168.1.1", btn_check_ip: "Verificar",
                 title_email_search: "Busca por Email", ph_email_target: "alvo@exemplo.com", btn_analyze: "Analisar",
-                title_email_gen: "Gerador de E-mail Corporativo", ph_fname: "Nome", ph_lname: "Sobrenome", ph_cdomain: "empresa.com", btn_gen: "Gerar"
+                title_email_gen: "Gerador de E-mail Corporativo", ph_fname: "Nome", ph_lname: "Sobrenome", ph_cdomain: "empresa.com", btn_gen: "Gerar",
+                title_gen: "Geradores"
             }
         };
-
         function changeLanguage(lang) {
             const t = translations[lang];
             document.querySelectorAll('[data-lang]').forEach(el => {
