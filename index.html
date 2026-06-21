@@ -511,15 +511,19 @@
     document.getElementById('username-output').innerText = name;
 }
 
-function generatePassword() {
-    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-    let retVal = "";
-    for (let i = 0; i < 16; ++i) {
-        retVal += charset.charAt(Math.floor(Math.random() * charset.length));
-    }
-    document.getElementById('password-output').innerText = retVal;
+let passHistory = [];
+let nickHistory = [];
+
+// Функция для копирования
+function copyToClipboard(text) {
+    if (!text || text === "---") return;
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Скопировано: " + text);
+    });
 }
-        function generateAdvancedPassword() {
+
+// Улучшенная функция паролей
+function generateAdvancedPassword() {
     const len = document.getElementById('pass-len').value;
     let chars = "";
     if (document.getElementById('pass-upper').checked) chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -527,24 +531,44 @@ function generatePassword() {
     if (document.getElementById('pass-num').checked) chars += "0123456789";
     if (document.getElementById('pass-spec').checked) chars += "!@#$%^&*()_+";
     
+    if (chars === "") { alert("Выберите хотя бы одну категорию символов!"); return; }
+
     let pass = "";
     for (let i = 0; i < len; i++) {
         pass += chars.charAt(Math.floor(Math.random() * chars.length));
     }
+    
     document.getElementById('password-output').innerText = pass;
+    updateHistory(pass, 'pass-history', passHistory);
 }
 
+// Улучшенная функция ников
 function generateAdvancedNick() {
     const style = document.getElementById('nick-style').value;
     const parts = [['Shadow', 'Cyber', 'Ghost', 'Dark'], ['Hunter', 'Ops', 'X', 'Trace']];
-    
     let nick = parts[0][Math.floor(Math.random() * parts[0].length)] + 
                parts[1][Math.floor(Math.random() * parts[1].length)];
     
     if (style === 'mix') nick += Math.floor(Math.random() * 99);
     
     document.getElementById('username-output').innerText = nick;
+    updateHistory(nick, 'nick-history', nickHistory);
 }
+
+// Универсальное обновление истории
+function updateHistory(value, listId, historyArray) {
+    historyArray.unshift(value);
+    if (historyArray.length > 5) historyArray.pop();
+    
+    const list = document.getElementById(listId);
+    list.innerHTML = historyArray.map(item => 
+        `<li onclick="copyToClipboard('${item}')" style="cursor:pointer; margin: 5px 0; border-bottom:1px solid #444;">${item} 📋</li>`
+    ).join('');
+}
+
+// Привязка клика для копирования основного результата
+document.getElementById('password-output').onclick = function() { copyToClipboard(this.innerText); };
+document.getElementById('username-output').onclick = function() { copyToClipboard(this.innerText); };
     </script>
 </body>
 </html>
