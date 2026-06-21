@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSINT Dashboard Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #0a1628;
+            --bg-secondary: #132238;
+            --bg-card: rgba(19, 34, 56, 0.9);
+            --gold: #FFD700;
+            --emerald: #059669;
+            --text-primary: #e8f0f8;
+            --text-secondary: #94a3b8;
+            --border-color: rgba(255, 215, 0, 0.3);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --input-bg: rgba(255,255,255,0.05);
+        }
+
+        body.light-theme {
+            --bg-primary: #f0f4f8;
+            --bg-secondary: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: rgba(5, 150, 105, 0.3);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --input-bg: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #0d1f3c 50%, var(--bg-primary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--gold), var(--emerald));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+        .logo-icon { font-size: 2.5rem; }
+
+        .controls { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+
+        .lang-switcher { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .lang-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+        .lang-btn:hover {
+            background: var(--gold);
+            color: #0a1628;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .theme-toggle:hover { background: var(--emerald); color: white; transform: translateY(-2px); }
+
+        /* ─── LAYOUT ─── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 25px;
+        }
+
+        /* ─── SIDEBAR ─── */
+        .sidebar {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sidebar-title {
+            color: var(--gold);
+            font-size: 1rem;
+            font-weight: 700;
+            padding-bottom: 10px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-item {
+            display: block;
+            padding: 11px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: none;
+            background: none;
+            text-align: left;
+            width: 100%;
+        }
+        .nav-item:hover {
+            background: rgba(255, 215, 0, 0.08);
+            color: var(--gold);
+            transform: translateX(4px);
+        }
+        .nav-item.active {
+            background: rgba(5, 150, 105, 0.15);
+            color: var(--emerald);
+            border-left: 3px solid var(--emerald);
+        }
+
+        .sidebar-divider {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 10px 0;
+        }
+
+        .sidebar-section-title {
+            color: var(--gold);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .resource-link {
+            display: block;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 10px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+        .resource-link:hover {
+            background: rgba(255, 215, 0, 0.08);
+            color: var(--gold);
+            transform: translateX(4px);
+        }
+
+        .sidebar-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        select {
+            width: 100%;
+            padding: 9px 12px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .theme-btn-side {
+            width: 100%;
+            padding: 9px;
+            background: none;
+            border: 1px dashed var(--gold);
+            color: var(--gold);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+        .theme-btn-side:hover { background: rgba(255, 215, 0, 0.1); }
+
+        /* ─── CONTENT ─── */
+        .content-area { min-width: 0; }
+
+        section { display: none; }
+        section.active { display: block; }
+
+        .section-title {
+            color: var(--gold);
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--emerald);
+        }
+
+        /* ─── INPUT ROW ─── */
+        .input-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            flex-wrap: wrap;
+        }
+
+        .input-field {
+            flex: 1;
+            min-width: 180px;
+            padding: 13px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        .input-field:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--emerald), #047857);
+            color: white;
+            border: none;
+            padding: 13px 26px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+        }
+
+        /* ─── RESULTS GRID ─── */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            position: relative;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        .result-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--gold);
+            box-shadow: 0 12px 32px rgba(255, 215, 0, 0.12);
+        }
+        .result-card strong {
+            display: block;
+            color: var(--emerald);
+            margin-bottom: 10px;
+            font-size: 1rem;
+            padding-right: 50px;
+        }
+        .result-card a {
+            color: var(--gold);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .result-card a:hover { text-decoration: underline; }
+
+        .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: 1px solid var(--emerald);
+            color: var(--emerald);
+            padding: 4px 9px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: 0.2s;
+        }
+        .copy-btn:hover { background: var(--emerald); color: white; }
+
+        /* ─── EMAIL GEN LIST ─── */
+        .email-list { list-style: none; margin-top: 10px; }
+        .email-list li {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--gold);
+            margin-bottom: 10px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .email-list span { color: var(--text-primary); font-size: 0.95rem; }
+        .copy-inline {
+            background: none;
+            border: none;
+            color: var(--emerald);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            white-space: nowrap;
+        }
+        .copy-inline:hover { color: var(--gold); }
+
+        /* ─── PASSWORD GEN ─── */
+        .pass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            max-width: 500px;
+        }
+        .pass-card h3 { color: var(--emerald); margin-bottom: 18px; font-size: 1.1rem; }
+        .pass-label { display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 0.9rem; }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 14px; margin: 14px 0; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; }
+        .checkbox-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--emerald); }
+        .checkbox-item label { color: var(--text-secondary); font-size: 0.9rem; }
+        .pass-output {
+            margin-top: 16px;
+            padding: 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: var(--gold);
+            letter-spacing: 0.05em;
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            word-break: break-all;
+        }
+
+        /* ─── MEDIA ─── */
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+        }
+        @media (max-width: 600px) {
+            header { flex-direction: column; gap: 15px; }
+            .logo h1 { font-size: 1.5rem; }
+            .input-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="logo">
+            <span class="logo-icon">🔍</span>
+            <h1>OSINT Dashboard Pro</h1>
+        </div>
+        <div class="controls">
+            <div class="lang-switcher">
+                <button class="lang-btn" onclick="changeLanguage('uk')">🇺🇦 UA</button>
+                <button class="lang-btn" onclick="changeLanguage('ru')">🇷🇺 RU</button>
+                <button class="lang-btn" onclick="changeLanguage('en')">🇬🇧 EN</button>
+                <button class="lang-btn" onclick="changeLanguage('pt')">🇧🇷 PT</button>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()">🌓 Тема</button>
+        </div>
+    </header>
+
+    <div class="main-grid">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-title">🛠 Інструменти</div>
+
+            <button class="nav-item active" onclick="switchTab('checker', this)" data-lang="nav_checker">🔍 Username Check</button>
+            <button class="nav-item" onclick="switchTab('domain', this)" data-lang="nav_domain">🌐 Domain Info</button>
+            <button class="nav-item" onclick="switchTab('ip_lookup', this)" data-lang="nav_ip">📍 IP Lookup</button>
+            <button class="nav-item" onclick="switchTab('email_search', this)" data-lang="nav_email_search">📧 Email Search</button>
+            <button class="nav-item" onclick="switchTab('email_gen', this)" data-lang="nav_email_gen">📝 Email Gen</button>
+            <button class="nav-item" onclick="switchTab('pass_gen', this)" data-lang="nav_pass_gen">⚙️ Password Gen</button>
+
+            <hr class="sidebar-divider">
+            <div class="sidebar-section-title" data-lang="resources">Ресурси</div>
+            <a href="https://osintframework.com/" class="resource-link" target="_blank">OSINT Framework</a>
+            <a href="https://haveibeenpwned.com/" class="resource-link" target="_blank">Have I Been Pwned</a>
+            <a href="https://whatsmyname.app/" class="resource-link" target="_blank">WhatsMyName</a>
+            <a href="https://github.com/sherlock-project/sherlock" class="resource-link" target="_blank">Sherlock</a>
+            <a href="https://viewdns.info/" class="resource-link" target="_blank">ViewDNS.info</a>
+            <a href="https://search.censys.io/" class="resource-link" target="_blank">Censys Search</a>
+            <a href="https://gchq.github.io/CyberChef/" class="resource-link" target="_blank">CyberChef</a>
+            <a href="https://dehashed.com/" class="resource-link" target="_blank">DeHashed</a>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="content-area">
+
+            <!-- Username Checker -->
+            <section id="checker" class="active">
+                <div class="section-title" data-lang="title_checker">Масова перевірка нікнейму</div>
+                <div class="input-row">
+                    <input class="input-field" type="text" id="usernameInput" placeholder="Введіть нікнейм без @" data-placeholder="ph_username">
+                    <button class="btn" onclick="checkUsername()" data-lang="btn_search">Запустити пошук</button>
+                </div>
+                <div id="results" class="results-grid"></div>
+            </section>
+
+            <!-- Domain Info -->
+            <section id="domain">
+                <div class="section-title" data-lang="title_domain">Аналіз домену</div>
+                <div class="input-row">
+                    <input class="input-field" type="text" id="domainInput" placeholder="example.com" data-placeholder="ph_domain">
+                    <button class="btn" onclick="checkDomain()" data-lang="btn_check">Перевірити</button>
+                </div>
+                <div id="domain-results" class="results-grid"></div>
+            </section>
+
+            <!-- IP Lookup -->
+            <section id="ip_lookup">
+                <div class="section-title" data-lang="title_ip">Аналіз IP-адреси</div>
+                <div class="input-row">
+                    <input class="input-field" type="text" id="ipInput" placeholder="192.168.1.1" data-placeholder="ph_ip">
+                    <button class="btn" onclick="checkIP()" data-lang="btn_check_ip">Перевірити</button>
+                </div>
+                <div id="ip-results" class="results-grid"></div>
+            </section>
+
+            <!-- Email Search -->
+            <section id="email_search">
+                <div class="section-title" data-lang="title_email_search">Пошук по Email</div>
+                <div class="input-row">
+                    <input class="input-field" type="email" id="emailSearchInput" placeholder="target@example.com" data-placeholder="ph_email_target">
+                    <button class="btn" onclick="searchEmail()" data-lang="btn_analyze">Аналізувати</button>
+                </div>
+                <div id="email-search-results" class="results-grid"></div>
+            </section>
+
+            <!-- Email Gen -->
+            <section id="email_gen">
+                <div class="section-title" data-lang="title_email_gen">Генератор Email</div>
+                <div class="input-row">
+                    <input class="input-field" type="text" id="firstName" placeholder="Ім'я" data-placeholder="ph_fname">
+                    <input class="input-field" type="text" id="lastName" placeholder="Прізвище" data-placeholder="ph_lname">
+                    <input class="input-field" type="text" id="companyDomain" placeholder="company.com" data-placeholder="ph_cdomain">
+                    <button class="btn" onclick="generateEmails()" data-lang="btn_gen">Згенерувати</button>
+                </div>
+                <ul id="email-output" class="email-list"></ul>
+            </section>
+
+            <!-- Password Gen -->
+            <section id="pass_gen">
+                <div class="section-title" data-lang="title_pass_gen">Генератор паролів</div>
+                <div class="pass-card">
+                    <label class="pass-label" data-lang="pass_length">Довжина: <strong id="length-display">16</strong></label>
+                    <input class="input-field" type="range" id="password-length" min="8" max="64" value="16"
+                        oninput="document.getElementById('length-display').textContent=this.value" style="width:100%;padding:6px 0;background:none;border:none;accent-color:var(--emerald);">
+                    <div class="checkbox-group">
+                        <div class="checkbox-item"><input type="checkbox" id="uppercase" checked><label for="uppercase" data-lang="pass_upper">Великі літери</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="lowercase" checked><label for="lowercase" data-lang="pass_lower">Малі літери</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="numbers" checked><label for="numbers" data-lang="pass_numbers">Цифри</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="symbols"><label for="symbols" data-lang="pass_symbols">Символи (!@#)</label></div>
+                    </div>
+                    <button class="btn" style="width:100%" onclick="generatePassword()" data-lang="btn_gen_pass">Генерувати пароль</button>
+                    <div class="pass-output" id="pass-output">
+                        <span id="pass-value" style="color:var(--text-secondary);font-style:italic;font-size:0.9rem">Натисніть кнопку...</span>
+                        <button class="copy-btn" id="pass-copy-btn" style="display:none;position:static" onclick="copyPassword()">Copy</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<script>
+    // ─── TAB SWITCH ───
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+    }
+
+    // ─── THEME ───
+    function toggleTheme() {
+        document.body.classList.toggle('light-theme');
+        localStorage.setItem('osint-theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+    }
+
+    // ─── TOOLS ───
+    function checkUsername() {
+        const username = document.getElementById('usernameInput').value.trim();
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+        if (!username) return;
+
+        const platforms = [
+            { name: 'GitHub', url: `https://github.com/${username}` },
+            { name: 'Telegram', url: `https://t.me/${username}` },
+            { name: 'Instagram', url: `https://instagram.com/${username}` },
+            { name: 'Twitter / X', url: `https://twitter.com/${username}` },
+            { name: 'TikTok', url: `https://tiktok.com/@${username}` },
+            { name: 'Reddit', url: `https://www.reddit.com/user/${username}` },
+            { name: 'Keybase', url: `https://keybase.io/${username}` },
+            { name: 'Pinterest', url: `https://pinterest.com/${username}` },
+            { name: 'Twitch', url: `https://twitch.tv/${username}` },
+            { name: 'Steam', url: `https://steamcommunity.com/id/${username}` }
+        ];
+
+        platforms.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `
+                <strong>${p.name}</strong>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText('${p.url}')">Copy</button>
+                <a href="${p.url}" target="_blank">Відкрити ↗</a>
+            `;
+            resultsDiv.appendChild(card);
+        });
+    }
+
+    function checkDomain() {
+        const domain = document.getElementById('domainInput').value.trim();
+        const resDiv = document.getElementById('domain-results');
+        resDiv.innerHTML = '';
+        if (!domain) return;
+        [
+            { name: 'Whois Lookup', url: `https://who.is/${domain}` },
+            { name: 'DNS Records', url: `https://dnschecker.org/dns-lookup.php?host=${domain}` },
+            { name: 'VirusTotal Scan', url: `https://www.virustotal.com/gui/domain/${domain}/details` }
+        ].forEach(t => {
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `<strong>${t.name}</strong><button class="copy-btn" onclick="navigator.clipboard.writeText('${t.url}')">Copy</button><a href="${t.url}" target="_blank">Деталі ↗</a>`;
+            resDiv.appendChild(card);
+        });
+    }
+
+    function checkIP() {
+        const ip = document.getElementById('ipInput').value.trim();
+        const resDiv = document.getElementById('ip-results');
+        resDiv.innerHTML = '';
+        if (!ip) return;
+        [
+            { name: 'IPInfo.io', url: `https://ipinfo.io/${ip}` },
+            { name: 'VirusTotal IP', url: `https://www.virustotal.com/gui/ip-address/${ip}/details` },
+            { name: 'Shodan Search', url: `https://www.shodan.io/host/${ip}` }
+        ].forEach(t => {
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `<strong>${t.name}</strong><button class="copy-btn" onclick="navigator.clipboard.writeText('${t.url}')">Copy</button><a href="${t.url}" target="_blank">Деталі ↗</a>`;
+            resDiv.appendChild(card);
+        });
+    }
+
+    function searchEmail() {
+        const email = document.getElementById('emailSearchInput').value.trim();
+        const resDiv = document.getElementById('email-search-results');
+        resDiv.innerHTML = '';
+        if (!email) return;
+        [
+            { name: 'Have I Been Pwned', url: `https://haveibeenpwned.com/account/${email}` },
+            { name: 'Hunter.io Verify', url: `https://hunter.io/email-verifier/${email}` },
+            { name: 'Epieos (Google/Skype)', url: `https://epieos.com/?q=${email}` }
+        ].forEach(t => {
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `<strong>${t.name}</strong><button class="copy-btn" onclick="navigator.clipboard.writeText('${t.url}')">Copy</button><a href="${t.url}" target="_blank">Перевірити ↗</a>`;
+            resDiv.appendChild(card);
+        });
+    }
+
+    function generateEmails() {
+        const f = document.getElementById('firstName').value.trim().toLowerCase();
+        const l = document.getElementById('lastName').value.trim().toLowerCase();
+        const d = document.getElementById('companyDomain').value.trim();
+        const output = document.getElementById('email-output');
+        output.innerHTML = '';
+        if (!f || !l || !d) return;
+        const patterns = [
+            `${f}.${l}@${d}`, `${f}${l}@${d}`, `${f}_${l}@${d}`,
+            `${f.charAt(0)}${l}@${d}`, `${f}@${d}`, `${f.charAt(0)}.${l}@${d}`
+        ];
+        patterns.forEach(email => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${email}</span><button class="copy-inline" onclick="navigator.clipboard.writeText('${email}')">📋 Copy</button>`;
+            output.appendChild(li);
+        });
+    }
+
+    function generatePassword() {
+        const length = parseInt(document.getElementById('password-length').value);
+        const useUpper = document.getElementById('uppercase').checked;
+        const useLower = document.getElementById('lowercase').checked;
+        const useNumbers = document.getElementById('numbers').checked;
+        const useSymbols = document.getElementById('symbols').checked;
+
+        let chars = '';
+        if (useLower) chars += 'abcdefghijklmnopqrstuvwxyz';
+        if (useUpper) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        if (useNumbers) chars += '0123456789';
+        if (useSymbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+        if (!chars) { alert('Виберіть хоча б один тип символів!'); return; }
+
+        let password = '';
+        const arr = new Uint32Array(length);
+        crypto.getRandomValues(arr);
+        for (let i = 0; i < length; i++) {
+            password += chars[arr[i] % chars.length];
+        }
+
+        document.getElementById('pass-value').style.color = 'var(--gold)';
+        document.getElementById('pass-value').style.fontStyle = 'normal';
+        document.getElementById('pass-value').textContent = password;
+        document.getElementById('pass-copy-btn').style.display = 'inline-block';
+    }
+
+    function copyPassword() {
+        const val = document.getElementById('pass-value').textContent;
+        navigator.clipboard.writeText(val);
+        const btn = document.getElementById('pass-copy-btn');
+        btn.textContent = '✓ OK';
+        setTimeout(() => btn.textContent = 'Copy', 1500);
+    }
+
+    // ─── LOCALIZATION ───
+    const translations = {
+        uk: {
+            nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain Info", nav_ip: "📍 IP Lookup",
+            nav_email_search: "📧 Email Search", nav_email_gen: "📝 Email Gen", nav_pass_gen: "⚙️ Password Gen",
+            resources: "Ресурси",
+            title_checker: "Масова перевірка нікнейму", ph_username: "Введіть нікнейм без @", btn_search: "Запустити пошук",
+            title_domain: "Аналіз домену", ph_domain: "example.com", btn_check: "Перевірити",
+            title_ip: "Аналіз IP-адреси", ph_ip: "192.168.1.1", btn_check_ip: "Перевірити",
+            title_email_search: "Пошук по Email", ph_email_target: "target@example.com", btn_analyze: "Аналізувати",
+            title_email_gen: "Генератор Email", ph_fname: "Ім'я", ph_lname: "Прізвище", ph_cdomain: "company.com", btn_gen: "Згенерувати",
+            title_pass_gen: "Генератор паролів", pass_length: "Довжина:", pass_upper: "Великі літери", pass_lower: "Малі літери",
+            pass_numbers: "Цифри", pass_symbols: "Символи (!@#)", btn_gen_pass: "Генерувати пароль"
+        },
+        ru: {
+            nav_checker: "🔍 Проверка никнейма", nav_domain: "🌐 Домен", nav_ip: "📍 IP Lookup",
+            nav_email_search: "📧 Поиск Email", nav_email_gen: "📝 Email Gen", nav_pass_gen: "⚙️ Пароли",
+            resources: "Ресурсы",
+            title_checker: "Массовая проверка никнейма", ph_username: "Введите никнейм без @", btn_search: "Запустить поиск",
+            title_domain: "Анализ домена", ph_domain: "example.com", btn_check: "Проверить",
+            title_ip: "Анализ IP-адреса", ph_ip: "192.168.1.1", btn_check_ip: "Проверить",
+            title_email_search: "Поиск по Email", ph_email_target: "target@example.com", btn_analyze: "Анализировать",
+            title_email_gen: "Генератор Email", ph_fname: "Имя", ph_lname: "Фамилия", ph_cdomain: "company.com", btn_gen: "Сгенерировать",
+            title_pass_gen: "Генератор паролей", pass_length: "Длина:", pass_upper: "Большие буквы", pass_lower: "Маленькие",
+            pass_numbers: "Цифры", pass_symbols: "Символы (!@#)", btn_gen_pass: "Генерировать пароль"
+        },
+        en: {
+            nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain", nav_ip: "📍 IP Lookup",
+            nav_email_search: "📧 Email Search", nav_email_gen: "📝 Email Gen", nav_pass_gen: "⚙️ Passwords",
+            resources: "Resources",
+            title_checker: "Mass Username Check", ph_username: "Enter username without @", btn_search: "Start Search",
+            title_domain: "Domain Analysis", ph_domain: "example.com", btn_check: "Check",
+            title_ip: "IP Address Analysis", ph_ip: "192.168.1.1", btn_check_ip: "Check",
+            title_email_search: "Email Search", ph_email_target: "target@example.com", btn_analyze: "Analyze",
+            title_email_gen: "Email Generator", ph_fname: "First Name", ph_lname: "Last Name", ph_cdomain: "company.com", btn_gen: "Generate",
+            title_pass_gen: "Password Generator", pass_length: "Length:", pass_upper: "Uppercase", pass_lower: "Lowercase",
+            pass_numbers: "Numbers", pass_symbols: "Symbols (!@#)", btn_gen_pass: "Generate Password"
+        },
+        pt: {
+            nav_checker: "🔍 Verificar Usuário", nav_domain: "🌐 Domínio", nav_ip: "📍 IP Lookup",
+            nav_email_search: "📧 Buscar Email", nav_email_gen: "📝 Email Gen", nav_pass_gen: "⚙️ Senhas",
+            resources: "Links Úteis",
+            title_checker: "Verificação em Massa", ph_username: "Digite o usuário sem @", btn_search: "Iniciar Busca",
+            title_domain: "Análise de Domínio", ph_domain: "exemplo.com", btn_check: "Verificar",
+            title_ip: "Análise de IP", ph_ip: "192.168.1.1", btn_check_ip: "Verificar",
+            title_email_search: "Busca por Email", ph_email_target: "alvo@exemplo.com", btn_analyze: "Analisar",
+            title_email_gen: "Gerador de E-mail", ph_fname: "Nome", ph_lname: "Sobrenome", ph_cdomain: "empresa.com", btn_gen: "Gerar",
+            title_pass_gen: "Gerador de Senhas", pass_length: "Comprimento:", pass_upper: "Maiúsculas", pass_lower: "Minúsculas",
+            pass_numbers: "Números", pass_symbols: "Símbolos (!@#)", btn_gen_pass: "Gerar Senha"
+        }
+    };
+
+    function changeLanguage(lang) {
+        const t = translations[lang];
+        document.querySelectorAll('[data-lang]').forEach(el => {
+            const key = el.getAttribute('data-lang');
+            if (t[key]) el.textContent = t[key];
+        });
+        document.querySelectorAll('[data-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-placeholder');
+            if (t[key]) el.placeholder = t[key];
+        });
+    }
+
+    // Init
+    window.addEventListener('load', () => {
+        if (localStorage.getItem('osint-theme') === 'light') document.body.classList.add('light-theme');
+    });
+</script>
+</body>
+</html>
