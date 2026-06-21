@@ -147,17 +147,27 @@
 </head>
 <body>
 
-    <aside class="sidebar">
+       <aside class="sidebar">
         <div class="logo">OSINT<span style="color:var(--emerald)">PRO</span></div>
         
         <ul class="nav-links">
-            <li class="nav-item active" onclick="switchTab('checker')">🔍 Username Check</li>
-            <li class="nav-item" onclick="switchTab('domain')">🌐 Domain Info</li>
-            <li class="nav-item" onclick="switchTab('email')">📧 Email Gen</li>
+            <li class="nav-item active" onclick="switchTab('checker')" data-lang="nav_checker">🔍 Username Check</li>
+            <li class="nav-item" onclick="switchTab('domain')" data-lang="nav_domain">🌐 Domain Info</li>
+            <li class="nav-item" onclick="switchTab('email')" data-lang="nav_email">📧 Email Gen</li>
         </ul>
 
+        <!-- Компактный переключатель языков -->
+        <div style="margin-top: auto; padding-top: 20px;">
+            <select id="langSwitcher" onchange="changeLanguage(this.value)" style="width: 100%; padding: 8px; background: var(--input-bg); color: white; border: 1px solid #475569; border-radius: 6px;">
+                <option value="uk">🇺🇦 Українська</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="pt">🇧🇷 Português</option>
+            </select>
+        </div>
+
         <div class="external-links">
-            <h4 style="color: var(--text-main); margin-bottom: 15px;">Ресурси:</h4>
+            <h4 style="color: var(--text-main); margin-bottom: 15px;" data-lang="resources">Ресурси:</h4>
             <a href="https://osintframework.com/" target="_blank" class="ext-link">OSINT Framework</a>
             <a href="https://haveibeenpwned.com/" target="_blank" class="ext-link">Have I Been Pwned</a>
             <a href="https://www.virustotal.com/" target="_blank" class="ext-link">VirusTotal</a>
@@ -272,6 +282,55 @@
                 const li = document.createElement('li');
                 li.innerHTML = `<span>${email}</span> <button onclick="navigator.clipboard.writeText('${email}')" style="background:none;color:var(--emerald);border:none;cursor:pointer;font-weight:bold">Copy</button>`;
                 output.appendChild(li);
+            });
+        }
+    </script>
+        <script>
+        // Словарь переводов
+        const translations = {
+            uk: {
+                nav_checker: "🔍 Перевірка нікнейму", nav_domain: "🌐 Домен", nav_email: "📧 Email",
+                resources: "Корисні посилання:",
+                title_checker: "Масова перевірка нікнейму", ph_username: "Введіть нікнейм без @", btn_search: "Запустити пошук",
+                title_domain: "Аналіз домену", ph_domain: "example.com", btn_check: "Перевірити",
+                title_email: "Генератор корпоративних Email", ph_fname: "Ім'я", ph_lname: "Прізвище", ph_cdomain: "company.com", btn_gen: "Згенерувати варіанти"
+            },
+            ru: {
+                nav_checker: "🔍 Проверка никнейма", nav_domain: "🌐 Домен", nav_email: "📧 Email",
+                resources: "Полезные ссылки:",
+                title_checker: "Массовая проверка никнейма", ph_username: "Введите никнейм без @", btn_search: "Запустить поиск",
+                title_domain: "Анализ домена", ph_domain: "example.com", btn_check: "Проверить",
+                title_email: "Генератор корпоративных Email", ph_fname: "Имя", ph_lname: "Фамилия", ph_cdomain: "company.com", btn_gen: "Сгенерировать варианты"
+            },
+            en: {
+                nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain", nav_email: "📧 Email",
+                resources: "Useful Links:",
+                title_checker: "Mass Username Check", ph_username: "Enter username without @", btn_search: "Start Search",
+                title_domain: "Domain Analysis", ph_domain: "example.com", btn_check: "Check",
+                title_email: "Corporate Email Generator", ph_fname: "First Name", ph_lname: "Last Name", ph_cdomain: "company.com", btn_gen: "Generate Variants"
+            },
+            pt: {
+                nav_checker: "🔍 Verificar Usuário", nav_domain: "🌐 Domínio", nav_email: "📧 Email",
+                resources: "Links Úteis:",
+                title_checker: "Verificação em Massa", ph_username: "Digite o usuário sem @", btn_search: "Iniciar Busca",
+                title_domain: "Análise de Domínio", ph_domain: "exemplo.com", btn_check: "Verificar",
+                title_email: "Gerador de E-mail Corporativo", ph_fname: "Nome", ph_lname: "Sobrenome", ph_cdomain: "empresa.com", btn_gen: "Gerar Variantes"
+            }
+        };
+
+        function changeLanguage(lang) {
+            const t = translations[lang];
+            
+            // Обновляем текст элементов
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.getAttribute('data-lang');
+                if (t[key]) el.innerText = t[key];
+            });
+
+            // Обновляем плейсхолдеры (подсказки в полях)
+            document.querySelectorAll('[data-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-placeholder');
+                if (t[key]) el.placeholder = t[key];
             });
         }
     </script>
