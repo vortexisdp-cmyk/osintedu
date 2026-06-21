@@ -326,6 +326,18 @@
         </select>
         <button onclick="generateAdvancedNick()" class="btn-primary">Генерировать ник</button>
         <p id="username-output" style="font-weight: bold; margin: 10px 0;"></p>
+        <section id="generators" class="hidden-section">
+    <div style="margin-top: 20px; display: flex; gap: 40px;">
+        <div>
+            <h4>История паролей:</h4>
+            <ul id="pass-history" style="list-style: none; padding: 0;"></ul>
+        </div>
+        <div>
+            <h4>История ников:</h4>
+            <ul id="nick-history" style="list-style: none; padding: 0;"></ul>
+        </div>
+    </div>
+</section>
     </div>
 </div>
     </main>
@@ -459,6 +471,9 @@
                 title_email_search: "Пошук інформації по Email", ph_email_target: "target@example.com", btn_analyze: "Аналізувати",
                 title_email_gen: "Генератор корпоративних Email", ph_fname: "Ім'я", ph_lname: "Прізвище", ph_cdomain: "company.com", btn_gen: "Згенерувати",
                 title_gen: "Генератори"
+                history_pass: "Історія паролів:",
+                history_nick: "Історія ніків:",
+            
             },
             ru: {
                 nav_checker: "🔍 Проверка никнейма", nav_domain: "🌐 Домен", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Поиск Email", nav_email_gen: "📝 Генератор", nav_gens: "⚙️ Генераторы",
@@ -469,6 +484,8 @@
                 title_email_search: "Поиск информации по Email", ph_email_target: "target@example.com", btn_analyze: "Анализировать",
                 title_email_gen: "Генератор корпоративных Email", ph_fname: "Имя", ph_lname: "Фамилия", ph_cdomain: "company.com", btn_gen: "Сгенерировать",
                 title_gen: "Генераторы"
+                history_pass: "История паролей:",
+                history_nick: "История ников:",
             },
             en: {
                 nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Email Search", nav_email_gen: "📝 Generator", nav_gens: "⚙️ Generators",
@@ -479,6 +496,8 @@
                 title_email_search: "Email Information Search", ph_email_target: "target@example.com", btn_analyze: "Analyze",
                 title_email_gen: "Corporate Email Generator", ph_fname: "First Name", ph_lname: "Last Name", ph_cdomain: "company.com", btn_gen: "Generate",
                 title_gen: "Generators"
+                history_pass: "Password history:",
+                history_nick: "Nickname history:",
             },
             pt: {
                 nav_checker: "🔍 Verificar Usuário", nav_domain: "🌐 Domínio", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Buscar Email", nav_email_gen: "📝 Gerador", nav_gens: "⚙️ Geradores",
@@ -489,6 +508,8 @@
                 title_email_search: "Busca por Email", ph_email_target: "alvo@exemplo.com", btn_analyze: "Analisar",
                 title_email_gen: "Gerador de E-mail Corporativo", ph_fname: "Nome", ph_lname: "Sobrenome", ph_cdomain: "empresa.com", btn_gen: "Gerar",
                 title_gen: "Geradores"
+                history_pass: "Histórico de senhas:",
+                history_nick: "Histórico de apelidos:",
             }
         };
         function changeLanguage(lang) {
@@ -512,6 +533,65 @@
 }
 
 let passHistory = [];
+let nickHistory = [];
+
+// Функция для копирования
+function copyToClipboard(text) {
+    if (!text || text === "---") return;
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Скопировано: " + text);
+    });
+}
+
+// Улучшенная функция паролей
+function generateAdvancedPassword() {
+    const len = document.getElementById('pass-len').value;
+    let chars = "";
+    if (document.getElementById('pass-upper').checked) chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (document.getElementById('pass-lower').checked) chars += "abcdefghijklmnopqrstuvwxyz";
+    if (document.getElementById('pass-num').checked) chars += "0123456789";
+    if (document.getElementById('pass-spec').checked) chars += "!@#$%^&*()_+";
+    
+    if (chars === "") { alert("Выберите хотя бы одну категорию символов!"); return; }
+
+    let pass = "";
+    for (let i = 0; i < len; i++) {
+        pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    document.getElementById('password-output').innerText = pass;
+    updateHistory(pass, 'pass-history', passHistory);
+}
+
+// Улучшенная функция ников
+function generateAdvancedNick() {
+    const style = document.getElementById('nick-style').value;
+    const parts = [['Shadow', 'Cyber', 'Ghost', 'Dark'], ['Hunter', 'Ops', 'X', 'Trace']];
+    let nick = parts[0][Math.floor(Math.random() * parts[0].length)] + 
+               parts[1][Math.floor(Math.random() * parts[1].length)];
+    
+    if (style === 'mix') nick += Math.floor(Math.random() * 99);
+    
+    document.getElementById('username-output').innerText = nick;
+    updateHistory(nick, 'nick-history', nickHistory);
+}
+
+// Универсальное обновление истории
+function updateHistory(value, listId, historyArray) {
+    historyArray.unshift(value);
+    if (historyArray.length > 5) historyArray.pop();
+    
+    const list = document.getElementById(listId);
+    list.innerHTML = historyArray.map(item => 
+        `<li onclick="copyToClipboard('${item}')" style="cursor:pointer; margin: 5px 0; border-bottom:1px solid #444;">${item} 📋</li>`
+    ).join('');
+}
+
+// Привязка клика для копирования основного результата
+document.getElementById('password-output').onclick = function() { copyToClipboard(this.innerText); };
+document.getElementById('username-output').onclick = function() { copyToClipboard(this.innerText); };
+
+        let passHistory = [];
 let nickHistory = [];
 
 // Функция для копирования
