@@ -6,13 +6,27 @@
     <title>OSINT Dashboard Pro</title>
     <style>
         :root {
-            --bg-main: #0f172a;       /* Глубокий темно-синий */
-            --sidebar-bg: #020617;    /* Почти черный синий */
-            --card-bg: #1e293b;       /* Темно-серый с синим оттенком */
-            --text-main: #e2e8f0;     /* Светло-серый текст */
-            --emerald: #059669;       /* Изумрудный */
-            --gold: #d4af37;          /* Золотой */
-            --input-bg: #334155;      /* Фон полей ввода */
+            /* Темная тема (Default) */
+            --bg-main: #0f172a;
+            --sidebar-bg: #020617;
+            --card-bg: #1e293b;
+            --text-main: #e2e8f0;
+            --emerald: #059669;
+            --gold: #d4af37;
+            --input-bg: #334155;
+            --border-color: #475569;
+        }
+
+        /* Светлая тема */
+        body.light-theme {
+            --bg-main: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --emerald: #047857;
+            --gold: #b45309;
+            --input-bg: #f1f5f9;
+            --border-color: #cbd5e1;
         }
 
         body {
@@ -22,16 +36,17 @@
             margin: 0;
             display: flex;
             min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* Боковая панель */
         .sidebar {
             width: 260px;
             background-color: var(--sidebar-bg);
             padding: 2rem;
-            border-right: 1px solid #1e293b;
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
+            transition: background-color 0.3s;
         }
 
         .logo {
@@ -50,51 +65,79 @@
             border-radius: 6px;
             cursor: pointer;
             transition: 0.3s;
-            color: #94a3b8;
+            color: var(--text-main);
+            opacity: 0.7;
             font-weight: 500;
         }
         .nav-item:hover, .nav-item.active {
             background-color: rgba(5, 150, 105, 0.1);
             color: var(--emerald);
             border-left: 3px solid var(--emerald);
+            opacity: 1;
         }
 
-        .external-links { margin-top: auto; padding-top: 2rem; border-top: 1px solid #1e293b; }
+        .controls-area {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        select, .theme-btn {
+            width: 100%;
+            padding: 10px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .theme-btn {
+            background: none;
+            border: 1px dashed var(--gold);
+            color: var(--gold);
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .theme-btn:hover { background: rgba(212, 175, 55, 0.1); }
+
+        .external-links { margin-top: 20px; }
         .ext-link {
             display: block;
-            color: var(--gold);
+            color: var(--emerald);
             text-decoration: none;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-            opacity: 0.8;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
         }
-        .ext-link:hover { opacity: 1; text-decoration: underline; }
+        .ext-link:hover { text-decoration: underline; }
 
-        /* Основной контент */
         main { flex: 1; padding: 3rem; overflow-y: auto; }
-        
         h2 { color: var(--gold); border-bottom: 1px solid var(--emerald); padding-bottom: 10px; margin-bottom: 25px; }
-
         .hidden-section { display: none; }
 
-        .input-group { 
-            display: flex; 
-            gap: 15px; 
-            margin-bottom: 30px; 
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
             background: var(--card-bg);
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
         }
 
-        input, select {
+        input {
             flex: 1;
             padding: 14px;
-            border: 1px solid #475569;
+            border: 1px solid var(--border-color);
             background: var(--input-bg);
             border-radius: 8px;
             outline: none;
-            color: white;
+            color: var(--text-main);
             font-size: 1rem;
         }
         input:focus { border-color: var(--emerald); }
@@ -107,9 +150,8 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            transition: 0.3s;
         }
-        .btn-primary:hover { background-color: #047857; }
+        .btn-primary:hover { opacity: 0.9; }
 
         .results-grid {
             display: grid;
@@ -121,11 +163,33 @@
             background: var(--card-bg);
             padding: 20px;
             border-radius: 10px;
-            border: 1px solid #334155;
-            transition: transform 0.2s;
+            border: 1px solid var(--border-color);
+            position: relative;
         }
-        .result-card:hover { transform: translateY(-3px); border-color: var(--gold); }
-        .result-card a { color: var(--emerald); text-decoration: none; font-weight: 600; display: block; margin-top: 10px; }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: 1px solid var(--emerald);
+            color: var(--emerald);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+        .copy-btn:hover { background: var(--emerald); color: white; }
+
+        .result-card a { 
+            color: var(--emerald); 
+            text-decoration: none; 
+            font-weight: 600; 
+            display: block; 
+            margin-top: 10px; 
+            padding-right: 60px; /* Чтобы текст не заезжал под кнопку */
+        }
 
         ul { list-style-type: none; padding: 0; }
         li {
@@ -136,6 +200,7 @@
             border-left: 3px solid var(--gold);
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
 
         @media (max-width: 768px) {
@@ -148,42 +213,35 @@
 <body>
 
     <aside class="sidebar">
-        <div class="logo">OSINT<span style="color:var(--emerald)">E</span></div>
+        <div class="logo">OSINT<span style="color:var(--emerald)">PRO</span></div>
         
         <ul class="nav-links">
             <li class="nav-item active" onclick="switchTab('checker')" data-lang="nav_checker">🔍 Username Check</li>
             <li class="nav-item" onclick="switchTab('domain')" data-lang="nav_domain">🌐 Domain Info</li>
+            <li class="nav-item" onclick="switchTab('ip_lookup')" data-lang="nav_ip">📍 IP Lookup</li>
             <li class="nav-item" onclick="switchTab('email_search')" data-lang="nav_email_search">📧 Email Search</li>
             <li class="nav-item" onclick="switchTab('email_gen')" data-lang="nav_email_gen">📝 Email Gen</li>
-            <li class="nav-item" onclick="switchTab('ip_lookup')" data-lang="nav_ip">📍 IP Lookup</li>
         </ul>
 
-        <div style="margin-top: auto; padding-top: 20px;">
-            <select id="langSwitcher" onchange="changeLanguage(this.value)" style="width: 100%; padding: 8px; background: var(--input-bg); color: white; border: 1px solid #475569; border-radius: 6px;">
+        <div class="controls-area">
+            <select id="langSwitcher" onchange="changeLanguage(this.value)">
                 <option value="uk">🇺🇦 Українська</option>
                 <option value="ru">🇷🇺 Русский</option>
                 <option value="en">🇬🇧 English</option>
                 <option value="pt">🇧🇷 Português</option>
             </select>
-        </div>
+            
+            <button class="theme-btn" onclick="toggleTheme()" data-lang="btn_theme">🌓 Змінити тему</button>
 
-           <div class="external-links">
-            <h4 style="color: var(--text-main); margin-bottom: 15px;" data-lang="resources">Ресурси:</h4>
-            <a href="https://osintframework.com/" target="_blank" class="ext-link">OSINT Framework</a>
-            <a href="https://haveibeenpwned.com/" target="_blank" class="ext-link">Have I Been Pwned</a>
-            <a href="https://www.virustotal.com/" target="_blank" class="ext-link">VirusTotal</a>
+            <div class="external-links">
+                <h4 style="margin: 15px 0 10px; font-size: 0.9rem;" data-lang="resources">Ресурси:</h4>
+                <a href="https://osintframework.com/" target="_blank" class="ext-link">OSINT Framework</a>
+                <a href="https://haveibeenpwned.com/" target="_blank" class="ext-link">Have I Been Pwned</a>
+            </div>
         </div>
     </aside>
 
     <main>
-        <section id="ip_lookup" class="hidden-section">
-    <h2 data-lang="title_ip">Аналіз IP-адреси</h2>
-    <div class="input-group">
-        <input type="text" id="ipInput" placeholder="192.168.1.1" data-placeholder="ph_ip">
-        <button onclick="checkIP()" class="btn-primary" data-lang="btn_check_ip">Перевірити</button>
-    </div>
-    <div id="ip-results" class="results-grid"></div>
-</section>
         <!-- Username Checker -->
         <section id="checker">
             <h2 data-lang="title_checker">Масова перевірка нікнейму</h2>
@@ -204,7 +262,17 @@
             <div id="domain-results" class="results-grid"></div>
         </section>
 
-        <!-- Email Search (New) -->
+        <!-- IP Lookup (NEW) -->
+        <section id="ip_lookup" class="hidden-section">
+            <h2 data-lang="title_ip">Аналіз IP-адреси</h2>
+            <div class="input-group">
+                <input type="text" id="ipInput" placeholder="192.168.1.1" data-placeholder="ph_ip">
+                <button onclick="checkIP()" class="btn-primary" data-lang="btn_check_ip">Перевірити</button>
+            </div>
+            <div id="ip-results" class="results-grid"></div>
+        </section>
+
+        <!-- Email Search -->
         <section id="email_search" class="hidden-section">
             <h2 data-lang="title_email_search">Пошук по Email</h2>
             <div class="input-group">
@@ -216,7 +284,7 @@
 
         <!-- Email Generator -->
         <section id="email_gen" class="hidden-section">
-            <h2 data-lang="title_email_gen">Генератор корпоративних Email</h2>
+            <h2 data-lang="title_email_gen">Генератор Email</h2>
             <div class="input-group">
                 <input type="text" id="firstName" placeholder="Ім'я" data-placeholder="ph_fname">
                 <input type="text" id="lastName" placeholder="Прізвище" data-placeholder="ph_lname">
@@ -228,65 +296,25 @@
     </main>
 
     <script>
-
-
-    
-        function checkIP() {
-    const ip = document.getElementById('ipInput').value;
-    const resDiv = document.getElementById('ip-results');
-    resDiv.innerHTML = '';
-    if (!ip) return;
-    
-    const tools = [
-        { name: 'IPInfo.io', url: `https://ipinfo.io/${ip}` },
-        { name: 'VirusTotal IP', url: `https://www.virustotal.com/gui/ip-address/${ip}/details` },
-        { name: 'Shodan Search', url: `https://www.shodan.io/host/${ip}` }
-    ];
-    tools.forEach(t => {
-        const card = document.createElement('div');
-        card.className = 'result-card';
-       card.innerHTML = `
-    <strong>${p.name}</strong>
-    <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
-        <a href="${p.url}" target="_blank">Відкрити ↗</a>
-        <button onclick="navigator.clipboard.writeText('${p.url}')" style="background:none; border:1px solid var(--emerald); color:var(--emerald); padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.8rem;">Copy</button>
-    </div>
-`;
-    });
-}
-        function toggleTheme() {
-    const root = document.documentElement;
-    const currentBg = getComputedStyle(root).getPropertyValue('--bg-main').trim();
-    
-    if (currentBg === '#0f172a') { // Если темная
-        root.style.setProperty('--bg-main', '#f8fafc');
-        root.style.setProperty('--sidebar-bg', '#ffffff');
-        root.style.setProperty('--card-bg', '#ffffff');
-        root.style.setProperty('--text-main', '#1e293b');
-        root.style.setProperty('--input-bg', '#f1f5f9');
-    } else { // Если светлая
-        root.style.setProperty('--bg-main', '#0f172a');
-        root.style.setProperty('--sidebar-bg', '#020617');
-        root.style.setProperty('--card-bg', '#1e293b');
-        root.style.setProperty('--text-main', '#e2e8f0');
-        root.style.setProperty('--input-bg', '#334155');
-    }
-}
-        // 1. Логика переключения вкладок
+        // 1. Переключение вкладок
         function switchTab(tabId) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
             document.getElementById(tabId).classList.remove('hidden-section');
-            
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
         }
 
-        // 2. Логика инструментов
+        // 2. Смена темы
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+        }
+
+        // 3. Инструменты
         function checkUsername() {
             const username = document.getElementById('usernameInput').value;
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '';
-            if (!username) return alert('Будь ласка, введіть нікнейм!');
+            if (!username) return;
 
             const platforms = [
                 { name: 'GitHub', url: `https://github.com/${username}` },
@@ -304,7 +332,12 @@
             platforms.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'result-card';
-                card.innerHTML = `<strong>${p.name}</strong><br><a href="${p.url}" target="_blank">Відкрити профіль ↗</a>`;
+                // Добавлена кнопка Copy
+                card.innerHTML = `
+                    <strong>${p.name}</strong>
+                    <button class="copy-btn" onclick="navigator.clipboard.writeText('${p.url}')">Copy</button>
+                    <a href="${p.url}" target="_blank">Відкрити ↗</a>
+                `;
                 resultsDiv.appendChild(card);
             });
         }
@@ -322,7 +355,27 @@
             tools.forEach(t => {
                 const card = document.createElement('div');
                 card.className = 'result-card';
-                card.innerHTML = `<strong>${t.name}</strong><br><a href="${t.url}" target="_blank">Детальний звіт ↗</a>`;
+                card.innerHTML = `<strong>${t.name}</strong><br><a href="${t.url}" target="_blank">Деталі ↗</a>`;
+                resDiv.appendChild(card);
+            });
+        }
+
+        // Функция для IP Lookup
+        function checkIP() {
+            const ip = document.getElementById('ipInput').value;
+            const resDiv = document.getElementById('ip-results');
+            resDiv.innerHTML = '';
+            if (!ip) return;
+            
+            const tools = [
+                { name: 'IPInfo.io', url: `https://ipinfo.io/${ip}` },
+                { name: 'VirusTotal IP', url: `https://www.virustotal.com/gui/ip-address/${ip}/details` },
+                { name: 'Shodan Search', url: `https://www.shodan.io/host/${ip}` }
+            ];
+            tools.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `<strong>${t.name}</strong><br><a href="${t.url}" target="_blank">Деталі ↗</a>`;
                 resDiv.appendChild(card);
             });
         }
@@ -332,13 +385,11 @@
             const resDiv = document.getElementById('email-search-results');
             resDiv.innerHTML = '';
             if (!email) return;
-
             const tools = [
                 { name: 'Have I Been Pwned', url: `https://haveibeenpwned.com/account/${email}` },
-                { name: 'Hunter.io (Verify)', url: `https://hunter.io/email-verifier/${email}` },
+                { name: 'Hunter.io Verify', url: `https://hunter.io/email-verifier/${email}` },
                 { name: 'Epieos (Google/Skype)', url: `https://epieos.com/?q=${email}` }
             ];
-
             tools.forEach(t => {
                 const card = document.createElement('div');
                 card.className = 'result-card';
@@ -354,7 +405,6 @@
             const output = document.getElementById('email-output');
             output.innerHTML = '';
             if (!f || !l || !d) return;
-            
             const patterns = [`${f}.${l}@${d}`, `${f}${l}@${d}`, `${f}_${l}@${d}`, `${f.substring(0,1)}${l}@${d}`];
             patterns.forEach(email => {
                 const li = document.createElement('li');
@@ -363,48 +413,52 @@
             });
         }
 
-        // 3. Логика Локализации (Исправленная)
+        // 4. Локализация
         const translations = {
             uk: {
-                nav_checker: "🔍 Перевірка нікнейму", nav_domain: "🌐 Домен", nav_email: "📧 Email",
-                resources: "Корисні посилання:",
+                nav_checker: "🔍 Перевірка нікнейму", nav_domain: "🌐 Домен", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Пошук Email", nav_email_gen: "📝 Генератор",
+                resources: "Корисні посилання:", btn_theme: "🌓 Змінити тему",
                 title_checker: "Масова перевірка нікнейму", ph_username: "Введіть нікнейм без @", btn_search: "Запустити пошук",
                 title_domain: "Аналіз домену", ph_domain: "example.com", btn_check: "Перевірити",
-                title_email: "Генератор корпоративних Email", ph_fname: "Ім'я", ph_lname: "Прізвище", ph_cdomain: "company.com", btn_gen: "Згенерувати варіанти"
+                title_ip: "Аналіз IP-адреси", ph_ip: "192.168.1.1", btn_check_ip: "Перевірити",
+                title_email_search: "Пошук інформації по Email", ph_email_target: "target@example.com", btn_analyze: "Аналізувати",
+                title_email_gen: "Генератор корпоративних Email", ph_fname: "Ім'я", ph_lname: "Прізвище", ph_cdomain: "company.com", btn_gen: "Згенерувати"
             },
             ru: {
-                nav_checker: "🔍 Проверка никнейма", nav_domain: "🌐 Домен", nav_email: "📧 Email",
-                resources: "Полезные ссылки:",
+                nav_checker: "🔍 Проверка никнейма", nav_domain: "🌐 Домен", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Поиск Email", nav_email_gen: "📝 Генератор",
+                resources: "Полезные ссылки:", btn_theme: "🌓 Сменить тему",
                 title_checker: "Массовая проверка никнейма", ph_username: "Введите никнейм без @", btn_search: "Запустить поиск",
                 title_domain: "Анализ домена", ph_domain: "example.com", btn_check: "Проверить",
-                title_email: "Генератор корпоративных Email", ph_fname: "Имя", ph_lname: "Фамилия", ph_cdomain: "company.com", btn_gen: "Сгенерировать варианты"
+                title_ip: "Анализ IP-адреса", ph_ip: "192.168.1.1", btn_check_ip: "Проверить",
+                title_email_search: "Поиск информации по Email", ph_email_target: "target@example.com", btn_analyze: "Анализировать",
+                title_email_gen: "Генератор корпоративных Email", ph_fname: "Имя", ph_lname: "Фамилия", ph_cdomain: "company.com", btn_gen: "Сгенерировать"
             },
             en: {
-                nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain", nav_email: "📧 Email",
-                resources: "Useful Links:",
+                nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Email Search", nav_email_gen: "📝 Generator",
+                resources: "Useful Links:", btn_theme: "🌓 Toggle Theme",
                 title_checker: "Mass Username Check", ph_username: "Enter username without @", btn_search: "Start Search",
                 title_domain: "Domain Analysis", ph_domain: "example.com", btn_check: "Check",
-                title_email: "Corporate Email Generator", ph_fname: "First Name", ph_lname: "Last Name", ph_cdomain: "company.com", btn_gen: "Generate Variants"
+                title_ip: "IP Address Analysis", ph_ip: "192.168.1.1", btn_check_ip: "Check",
+                title_email_search: "Email Information Search", ph_email_target: "target@example.com", btn_analyze: "Analyze",
+                title_email_gen: "Corporate Email Generator", ph_fname: "First Name", ph_lname: "Last Name", ph_cdomain: "company.com", btn_gen: "Generate"
             },
             pt: {
-                nav_checker: "🔍 Verificar Usuário", nav_domain: "🌐 Domínio", nav_email: "📧 Email",
-                resources: "Links Úteis:",
+                nav_checker: "🔍 Verificar Usuário", nav_domain: "🌐 Domínio", nav_ip: "📍 IP Lookup", nav_email_search: "📧 Buscar Email", nav_email_gen: "📝 Gerador",
+                resources: "Links Úteis:", btn_theme: "🌓 Mudar Tema",
                 title_checker: "Verificação em Massa", ph_username: "Digite o usuário sem @", btn_search: "Iniciar Busca",
                 title_domain: "Análise de Domínio", ph_domain: "exemplo.com", btn_check: "Verificar",
-                title_email: "Gerador de E-mail Corporativo", ph_fname: "Nome", ph_lname: "Sobrenome", ph_cdomain: "empresa.com", btn_gen: "Gerar Variantes"
+                title_ip: "Análise de IP", ph_ip: "192.168.1.1", btn_check_ip: "Verificar",
+                title_email_search: "Busca por Email", ph_email_target: "alvo@exemplo.com", btn_analyze: "Analisar",
+                title_email_gen: "Gerador de E-mail Corporativo", ph_fname: "Nome", ph_lname: "Sobrenome", ph_cdomain: "empresa.com", btn_gen: "Gerar"
             }
         };
 
         function changeLanguage(lang) {
             const t = translations[lang];
-            
-            // Обновляем текст элементов
             document.querySelectorAll('[data-lang]').forEach(el => {
                 const key = el.getAttribute('data-lang');
                 if (t[key]) el.innerText = t[key];
             });
-
-            // Обновляем плейсхолдеры (подсказки в полях)
             document.querySelectorAll('[data-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-placeholder');
                 if (t[key]) el.placeholder = t[key];
