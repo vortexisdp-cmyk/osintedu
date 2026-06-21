@@ -293,6 +293,17 @@
             <button onclick="generateEmails()" class="btn-primary" data-lang="btn_gen">Згенерувати</button>
             <ul id="email-output" style="margin-top: 20px;"></ul>
         </section>
+
+        <section id="generators" class="hidden-section">
+    <h2 data-lang="title_gen">Генераторы</h2>
+    <div class="input-group" style="flex-direction: column;">
+        <button onclick="generateUsername()" class="btn-primary">Генерировать никнейм</button>
+        <p id="username-output" style="margin: 10px 0; font-weight: bold;"></p>
+        
+        <button onclick="generatePassword()" class="btn-primary" style="background: var(--gold);">Генерировать пароль</button>
+        <p id="password-output" style="margin: 10px 0; font-weight: bold;"></p>
+    </div>
+</section>
     </main>
 
     <script>
@@ -464,6 +475,23 @@
                 if (t[key]) el.placeholder = t[key];
             });
         }
+        function generateUsername() {
+    const prefixes = ['Shadow', 'Cyber', 'Agent', 'Dark', 'Ghost'];
+    const suffixes = ['Hunter', 'Ops', 'X', 'Trace', 'Found'];
+    const name = prefixes[Math.floor(Math.random() * prefixes.length)] + 
+                 suffixes[Math.floor(Math.random() * suffixes.length)] + 
+                 Math.floor(Math.random() * 999);
+    document.getElementById('username-output').innerText = name;
+}
+
+function generatePassword() {
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let retVal = "";
+    for (let i = 0; i < 16; ++i) {
+        retVal += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    document.getElementById('password-output').innerText = retVal;
+}
     </script>
 </body>
 </html>
