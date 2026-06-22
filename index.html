@@ -419,7 +419,7 @@
     <div class="main-grid">
         <!-- SIDEBAR -->
         <aside class="sidebar">
-            <div class="sidebar-title">🛠 Tools</div>
+            <div class="sidebar-title" data-lang="sidebar_tools">🛠 Tools</div>
 
             <button class="nav-item active" onclick="switchTab('checker', this)" data-lang="nav_checker">🔍 Username Check</button>
             <button class="nav-item" onclick="switchTab('domain', this)" data-lang="nav_domain">🌐 Domain Info</button>
@@ -432,15 +432,19 @@
 
 
             <hr class="sidebar-divider">
-            <div class="sidebar-section-title" data-lang="resources">Ресурси</div>
-            <a href="https://osintframework.com/" class="resource-link" target="_blank">OSINT Framework</a>
-            <a href="https://haveibeenpwned.com/" class="resource-link" target="_blank">Have I Been Pwned</a>
-            <a href="https://whatsmyname.app/" class="resource-link" target="_blank">WhatsMyName</a>
-            <a href="https://github.com/sherlock-project/sherlock" class="resource-link" target="_blank">Sherlock</a>
-            <a href="https://viewdns.info/" class="resource-link" target="_blank">ViewDNS.info</a>
-            <a href="https://search.censys.io/" class="resource-link" target="_blank">Censys Search</a>
-            <a href="https://gchq.github.io/CyberChef/" class="resource-link" target="_blank">CyberChef</a>
-            <a href="https://dehashed.com/" class="resource-link" target="_blank">DeHashed</a>
+            <details class="resources-details" open>
+                <summary class="sidebar-section-title resources-summary" data-lang="resources">Ресурси</summary>
+                <div class="resources-inner">
+                    <a href="https://osintframework.com/" class="resource-link" target="_blank">OSINT Framework</a>
+                    <a href="https://haveibeenpwned.com/" class="resource-link" target="_blank">Have I Been Pwned</a>
+                    <a href="https://whatsmyname.app/" class="resource-link" target="_blank">WhatsMyName</a>
+                    <a href="https://github.com/sherlock-project/sherlock" class="resource-link" target="_blank">Sherlock</a>
+                    <a href="https://viewdns.info/" class="resource-link" target="_blank">ViewDNS.info</a>
+                    <a href="https://search.censys.io/" class="resource-link" target="_blank">Censys Search</a>
+                    <a href="https://gchq.github.io/CyberChef/" class="resource-link" target="_blank">CyberChef</a>
+                    <a href="https://dehashed.com/" class="resource-link" target="_blank">DeHashed</a>
+                </div>
+            </details>
         </aside>
 
         <!-- MAIN CONTENT -->
@@ -524,7 +528,7 @@
                 <div class="section-title">🔎 DNS Lookup</div>
                 <div class="input-row">
                     <input class="input-field" type="text" id="dnsInput" placeholder="example.com">
-                    <select class="input-field" id="dnsType" style="flex:0 0 120px;color-scheme:dark">
+                    <select class="input-field" id="dnsType" style="flex:0 0 120px;background:#0d1e36;color:#e8f0f8;border-color:rgba(255,215,0,0.3)">
                         <option value="A">A</option>
                         <option value="MX">MX</option>
                         <option value="TXT">TXT</option>
@@ -748,9 +752,9 @@
     // ─── LOCALIZATION ───
     const translations = {
         uk: {
-            nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain Info", nav_ip: "📍 IP Lookup",
+            sidebar_tools: "🛠 Інструменти", nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain Info", nav_ip: "📍 IP Lookup",
             nav_email_search: "📧 Email Search", nav_email_gen: "📝 Email Gen", nav_pass_gen: "⚙️ Password Gen",
-            resources: "Ресурси",
+            resources: "Ресурси ▾",
             title_checker: "Масова перевірка нікнейму", ph_username: "Введіть нікнейм без @", btn_search: "Запустити пошук",
             title_domain: "Аналіз домену", ph_domain: "example.com", btn_check: "Перевірити",
             title_ip: "Аналіз IP-адреси", ph_ip: "192.168.1.1", btn_check_ip: "Перевірити",
@@ -760,9 +764,9 @@
             pass_numbers: "Цифри", pass_symbols: "Символи (!@#)", btn_gen_pass: "Генерувати пароль"
         },
         ru: {
-            nav_checker: "🔍 Проверка никнейма", nav_domain: "🌐 Домен", nav_ip: "📍 IP Lookup",
+            sidebar_tools: "🛠 Инструменты", nav_checker: "🔍 Проверка никнейма", nav_domain: "🌐 Домен", nav_ip: "📍 IP Lookup",
             nav_email_search: "📧 Поиск Email", nav_email_gen: "📝 Email Gen", nav_pass_gen: "⚙️ Пароли",
-            resources: "Ресурсы",
+            resources: "Ресурсы ▾",
             title_checker: "Массовая проверка никнейма", ph_username: "Введите никнейм без @", btn_search: "Запустить поиск",
             title_domain: "Анализ домена", ph_domain: "example.com", btn_check: "Проверить",
             title_ip: "Анализ IP-адреса", ph_ip: "192.168.1.1", btn_check_ip: "Проверить",
@@ -772,9 +776,9 @@
             pass_numbers: "Цифры", pass_symbols: "Символы (!@#)", btn_gen_pass: "Генерировать пароль"
         },
         en: {
-            nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain", nav_ip: "📍 IP Lookup",
+            sidebar_tools: "🛠 Tools", nav_checker: "🔍 Username Check", nav_domain: "🌐 Domain", nav_ip: "📍 IP Lookup",
             nav_email_search: "📧 Email Search", nav_email_gen: "📝 Email Gen", nav_pass_gen: "⚙️ Passwords",
-            resources: "Resources",
+            resources: "Resources ▾",
             title_checker: "Mass Username Check", ph_username: "Enter username without @", btn_search: "Start Search",
             title_domain: "Domain Analysis", ph_domain: "example.com", btn_check: "Check",
             title_ip: "IP Address Analysis", ph_ip: "192.168.1.1", btn_check_ip: "Check",
@@ -784,9 +788,9 @@
             pass_numbers: "Numbers", pass_symbols: "Symbols (!@#)", btn_gen_pass: "Generate Password"
         },
         pt: {
-            nav_checker: "🔍 Verificar Usuário", nav_domain: "🌐 Domínio", nav_ip: "📍 IP Lookup",
+            sidebar_tools: "🛠 Ferramentas", nav_checker: "🔍 Verificar Usuário", nav_domain: "🌐 Domínio", nav_ip: "📍 IP Lookup",
             nav_email_search: "📧 Buscar Email", nav_email_gen: "📝 Email Gen", nav_pass_gen: "⚙️ Senhas",
-            resources: "Links Úteis",
+            resources: "Links Úteis ▾",
             title_checker: "Verificação em Massa", ph_username: "Digite o usuário sem @", btn_search: "Iniciar Busca",
             title_domain: "Análise de Domínio", ph_domain: "exemplo.com", btn_check: "Verificar",
             title_ip: "Análise de IP", ph_ip: "192.168.1.1", btn_check_ip: "Verificar",
@@ -809,10 +813,39 @@
         });
     }
 
-    // Init
+
+    // ─── HASH TOOL ───
+    async function hashText(algorithm) {
+        const text = document.getElementById('hashInput').value;
+        const resDiv = document.getElementById('hash-results');
+        if (!text.trim()) {
+            resDiv.innerHTML = '<div style="color:#f87171;padding:10px">⚠️ Введіть текст</div>';
+            return;
+        }
+        const encoder = new TextEncoder();
+        const hashBuffer = await crypto.subtle.digest(algorithm, encoder.encode(text));
+        const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        const card = document.createElement('div');
+        card.className = 'result-card';
+        card.style.marginBottom = '10px';
+        card.innerHTML = `
+            <strong style="padding-right:0;color:var(--gold);font-size:0.85rem">${algorithm}</strong>
+            <div style="font-family:monospace;word-break:break-all;color:var(--text-primary);margin-top:8px;font-size:0.88rem">${hashHex}</div>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('${hashHex}')">Copy</button>
+        `;
+        resDiv.insertBefore(card, resDiv.firstChild);
+    }
+
+    // ─── RESOURCES TOGGLE ───
     window.addEventListener('load', () => {
         if (localStorage.getItem('osint-theme') === 'light') document.body.classList.add('light-theme');
+        // На мобильном закрываем details по умолчанию
+        if (window.innerWidth <= 900) {
+            const det = document.querySelector('.resources-details');
+            if (det) det.removeAttribute('open');
+        }
     });
+
 </script>
 </body>
 </html>
