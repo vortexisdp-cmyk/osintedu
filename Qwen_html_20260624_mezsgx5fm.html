@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Audit | AIORO</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .lang-switch {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .lang-switch button {
+            background: none;
+            border: 1px solid #cbd5e1;
+            padding: 5px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-left: 5px;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .lang-switch button:hover { background: #f1f5f9; }
+        .lang-switch button.active {
+            background: #1e3a8a;
+            color: white;
+            border-color: #1e3a8a;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px 16px;
+            margin: 10px 0 20px 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #1e3a8a;
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background: #059669;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button[type="submit"]:hover { background: #047857; }
+        button[type="submit"]:disabled { background: #94a3b8; cursor: not-allowed; }
+        #status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            font-size: 14px;
+        }
+        #status.success { background: #d1fae5; color: #065f46; display: block; }
+        #status.error { background: #fee2e2; color: #991b1b; display: block; }
+        #status.processing { background: #dbeafe; color: #1e3a8a; display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="lang-switch">
+            <button onclick="switchLang('uk')" id="btn-uk" class="active">UA</button>
+            <button onclick="switchLang('ru')" id="btn-ru">RU</button>
+            <button onclick="switchLang('en')" id="btn-en">EN</button>
+            <button onclick="switchLang('pt')" id="btn-pt">PT</button>
+        </div>
+        
+        <h1 id="title">🛡️ Digital Audit</h1>
+        <p class="subtitle" id="subtitle">Перевірте свій цифровий слід та дізнайтесь, що про вас відомо</p>
+        
+        <form id="auditForm">
+            <select name="language" id="inp-lang" required>
+                <option value="">Оберіть мову звіту</option>
+                <option value="ukrainian">Українська</option>
+                <option value="russian">Русский</option>
+                <option value="english">English</option>
+                <option value="portuguese">Português (Brasil)</option>
+            </select>
+            <input type="text" name="name" id="inp-name" placeholder="Ваше ім'я" required>
+            <input type="email" name="email" id="inp-email" placeholder="Email" required>
+            <input type="text" name="username" id="inp-username" placeholder="Нікнейм у соцмережах" required>
+            <input type="text" name="website" id="inp-website" placeholder="Сайт (необов'язково)">
+            <button type="submit" id="btn-submit">Отримати звіт</button>
+        </form>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // ⚠️ ВСТАВЬ СВОЙ PRODUCTION URL СЮДА (замени ТВОЙ_URL)
+        const WEBHOOK_URL = 'ТВОЙ_URL';
+
+        const translations = {
+            uk: {
+                title: '🛡️ Digital Audit',
+                subtitle: 'Перевірте свій цифровий слід та дізнайтесь, що про вас відомо',
+                langSelect: 'Оберіть мову звіту',
+                name: "Ваше ім'я",
+                email: 'Email',
+                username: 'Нікнейм у соцмережах',
+                website: 'Сайт (необов\'язково)',
+                submit: 'Отримати звіт',
+                processing: '⏳ Обробка запиту... Зачекайте 10-20 секунд',
+                success: '✅ Звіт відправлено у Telegram! Перевірте повідомлення.',
+                error: '❌ Помилка. Спробуйте пізніше.'
+            },
+            ru: {
+                title: '🛡️ Digital Audit',
+                subtitle: 'Проверьте свой цифровой след и узнайте, что о вас известно',
+                langSelect: 'Выберите язык отчёта',
+                name: 'Ваше имя',
+                email: 'Email',
+                username: 'Никнейм в соцсетях',
+                website: 'Сайт (необязательно)',
+                submit: 'Получить отчёт',
+                processing: '⏳ Обработка запроса... Подождите 10-20 секунд',
+                success: '✅ Отчёт отправлен в Telegram! Проверьте сообщения.',
+                error: '❌ Ошибка. Попробуйте позже.'
+            },
+            en: {
+                title: '🛡️ Digital Audit',
+                subtitle: 'Check your digital footprint and see what information is public',
+                langSelect: 'Select report language',
+                name: 'Your Name',
+                email: 'Email',
+                username: 'Social Media Username',
+                website: 'Website (optional)',
+                submit: 'Get Report',
+                processing: '⏳ Processing... Please wait 10-20 seconds',
+                success: '✅ Report sent to Telegram! Check your messages.',
+                error: '❌ Error. Please try again later.'
+            },
+            pt: {
+                title: '🛡️ Digital Audit',
+                subtitle: 'Verifique sua pegada digital e descubra o que é público sobre você',
+                langSelect: 'Selecione o idioma do relatório',
+                name: 'Seu Nome',
+                email: 'Email',
+                username: 'Usuário das Redes Sociais',
+                website: 'Site (opcional)',
+                submit: 'Obter Relatório',
+                processing: '⏳ Processando... Aguarde 10-20 segundos',
+                success: '✅ Relatório enviado para o Telegram! Verifique suas mensagens.',
+                error: '❌ Erro. Tente novamente mais tarde.'
+            }
+        };
+
+        let currentLang = 'uk';
+
+        function switchLang(lang) {
+            currentLang = lang;
+            ['uk', 'ru', 'en', 'pt'].forEach(l => {
+                document.getElementById('btn-' + l).classList.toggle('active', l === lang);
+            });
+            
+            const t = translations[lang];
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('inp-lang').options[0].text = t.langSelect;
+            document.getElementById('inp-name').placeholder = t.name;
+            document.getElementById('inp-email').placeholder = t.email;
+            document.getElementById('inp-username').placeholder = t.username;
+            document.getElementById('inp-website').placeholder = t.website;
+            document.getElementById('btn-submit').textContent = t.submit;
+        }
+
+        document.getElementById('auditForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            const status = document.getElementById('status');
+            const btn = document.getElementById('btn-submit');
+            
+            status.textContent = translations[currentLang].processing;
+            status.className = 'processing';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    status.textContent = translations[currentLang].success;
+                    status.className = 'success';
+                    e.target.reset();
+                    switchLang(currentLang);
+                } else {
+                    throw new Error('Failed');
+                }
+            } catch (error) {
+                status.textContent = translations[currentLang].error;
+                status.className = 'error';
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
