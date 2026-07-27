@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Frontend QA Audit — prompt-engineering-guide.html · REP-2026-0727</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://cdn.jsdelivr.net/fontsource/css/unbounded@latest/index.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-sans@latest/index.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/fontsource/css/jetbrains-mono@latest/index.css" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --paper:#f0f2f4;
+  --card:#ffffff;
+  --ink:#14181f;
+  --ink-2:#344054;
+  --muted:#5b6472;
+  --line:#d7dce3;
+  --line-soft:#e6e9ee;
+  --accent:#1b5fd9;
+  --accent-soft:#e7effc;
+  --crit:#d92d20;      --crit-bg:#fee4e2;
+  --major:#dc6803;     --major-bg:#ffead5;
+  --minor:#067647;     --minor-bg:#d1fadf;
+  --code-bg:#0f1622;   --code-line:#233044;
+  --code-txt:#d7e0ee;  --code-cm:#7f93ad;
+  --header-h:64px;
+  --disp:"Unbounded","Arial Black",sans-serif;
+  --body:"IBM Plex Sans",system-ui,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Consolas,monospace;
+}
+/* ============ RESET / BASE ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scrollbar-gutter:stable;scroll-behavior:smooth}
+body{
+  font-family:var(--body);
+  font-size:16px;line-height:1.6;
+  color:var(--ink);background:var(--paper);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:clip; /* own-page guard rail */
+}
+img{max-width:100%;height:auto;display:block}
+button{font:inherit;cursor:pointer;background:none;border:none;color:inherit}
+a{color:var(--accent)}
+::selection{background:var(--ink);color:var(--paper)}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{width:min(1180px,100% - 32px);margin-inline:auto}
+.skip-link{
+  position:absolute;left:16px;top:-60px;z-index:200;
+  background:var(--ink);color:#fff;padding:12px 18px;border-radius:8px;
+  font-family:var(--mono);font-size:13px;transition:top .2s;
+}
+.skip-link:focus{top:12px}
+/* layered ambient background */
+.bg-layer{
+  position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(900px 520px at 88% -6%, rgba(27,95,217,.08), transparent 62%),
+    radial-gradient(760px 560px at -8% 34%, rgba(217,45,32,.055), transparent 60%),
+    radial-gradient(700px 500px at 70% 108%, rgba(6,118,71,.05), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(20,24,31,.032) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(90deg, rgba(20,24,31,.032) 0 1px, transparent 1px 34px);
+}
+/* ============ MASTHEAD ============ */
+.masthead{padding:26px 0 44px;border-bottom:2px solid var(--ink)}
+.doc-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:34px;
+}
+.doc-bar .left{display:flex;align-items:center;gap:14px}
+.barcode{width:110px;height:22px;flex:none;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px,var(--ink) 11px 14px,transparent 14px 17px);}
+.doc-status{color:var(--crit);font-weight:700;display:inline-flex;align-items:center;gap:8px}
+.doc-status::before{content:"";width:8px;height:8px;background:var(--crit);border-radius:50%;
+  animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(217,45,32,.45)}70%{box-shadow:0 0 0 9px rgba(217,45,32,0)}}
+.masthead-grid{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:start}
+.eyebrow{
+  font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-2);margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+}
+.eyebrow::before{content:"";width:26px;height:2px;background:var(--crit)}
+h1{
+  font-family:var(--disp);font-weight:800;text-transform:uppercase;
+  font-size:clamp(2.35rem,7.2vw,4.7rem);line-height:1;letter-spacing:-.015em;
+}
+h1 .t-outline{
+  display:block;color:transparent;-webkit-text-stroke:2px var(--crit);
+  text-stroke:2px var(--crit);
+}
+.cursor{display:inline-block;width:.5em;color:var(--crit);-webkit-text-stroke:0;
+  animation:blink 1.1s steps(1) infinite;margin-left:.08em}
+@keyframes blink{0%,55%{opacity:1}56%,100%{opacity:0}}
+.lede{margin-top:20px;max-width:56ch;font-size:15.5px;color:var(--ink-2)}
+.lede code{font-family:var(--mono);font-size:.86em;background:var(--line-soft);
+  border:1px solid var(--line);padding:2px 7px;border-radius:5px;overflow-wrap:break-word}
+.stamp{
+  align-self:start;margin-top:10px;width:158px;padding:16px 12px;text-align:center;
+  border:3px solid var(--crit);border-radius:10px;position:relative;
+  transform:rotate(-7deg);color:var(--crit);
+  font-family:var(--disp);font-weight:800;font-size:15px;line-height:1.25;
+  letter-spacing:.06em;text-transform:uppercase;
+  animation:stampIn .55s cubic-bezier(.2,.9,.3,1.35) .35s both;
+  transition:transform .25s;
+}
+.stamp:hover{transform:rotate(-3deg) scale(1.04)}
+.stamp::after{content:"";position:absolute;inset:4px;border:1px solid var(--crit);border-radius:6px;opacity:.6}
+@keyframes stampIn{0%{opacity:0;transform:rotate(-7deg) scale(1.9)}60%{opacity:1;transform:rotate(-7deg) scale(.93)}100%{transform:rotate(-7deg) scale(1)}}
+.meta-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:38px;
+}
+.meta-grid > div{border-top:2px solid var(--ink);padding-top:10px}
+.meta-grid dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.meta-grid dd{font-size:13.5px;font-weight:600;overflow-wrap:break-word}
+/* ============ VERDICT / STATS ============ */
+.stats{padding:34px 0 8px}
+.stats-panel{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:24px;box-shadow:0 1px 2px rgba(16,24,40,.05);
+}
+.stats-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.stats-head h2{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.stat{padding:6px 22px;border-left:1px solid var(--line-soft)}
+.stat:first-child{border-left:none;padding-left:0}
+.stat-num{font-family:var(--disp);font-weight:800;font-size:clamp(1.9rem,4.6vw,2.9rem);line-height:1;display:block}
+.stat-crit .stat-num{color:var(--crit)}
+.stat-major .stat-num{color:var(--major)}
+.stat-minor .stat-num{color:var(--minor)}
+.stat-total .stat-num{color:var(--ink)}
+.stat-label{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);display:block;margin-top:8px}
+.stat-bar{display:block;height:4px;border-radius:2px;margin-top:10px;background:var(--line-soft);overflow:hidden}
+.stat-bar i{display:block;height:100%;border-radius:2px;transform:scaleX(0);transform-origin:left;transition:transform .9s cubic-bezier(.2,.8,.2,1) .25s}
+.in .stat-bar i{transform:scaleX(1)}
+.stat-crit .stat-bar i{background:var(--crit)}
+.stat-major .stat-bar i{background:var(--major)}
+.stat-minor .stat-bar i{background:var(--minor)}
+.stat-total .stat-bar i{background:var(--ink)}
+.dist{display:flex;height:12px;border-radius:6px;overflow:hidden;margin-top:22px;background:var(--line-soft)}
+.dist i{transform:scaleX(0);transform-origin:left;transition:transform .8s ease}
+.dist.in i{transform:scaleX(1)}
+.dist .d-crit{width:22%;background:var(--crit);transition-delay:.15s}
+.dist .d-major{width:35%;background:var(--major);transition-delay:.3s}
+.dist .d-minor{width:43%;background:var(--minor);transition-delay:.45s}
+/* ============ TOOLBAR ============ */
+.toolbar{
+  position:sticky;top:0;z-index:60;margin-top:26px;
+  background:rgba(240,242,244,.86);
+  -webkit-backdrop-filter:blur(12px) saturate(1.4);
+  backdrop-filter:blur(12px) saturate(1.4);
+  border-block:1px solid var(--line);
+  transition:box-shadow .25s;
+}
+.toolbar.stuck{box-shadow:0 8px 24px rgba(16,24,40,.09)}
+.toolbar-inner{padding:12px 0;display:flex;flex-direction:column;gap:10px}
+.search-row{display:flex;align-items:center;gap:14px}
+.search{
+  flex:1;display:flex;align-items:center;gap:10px;height:44px;
+  background:var(--card);border:1px solid var(--line);border-radius:9px;padding:0 14px;
+  transition:border-color .2s, box-shadow .2s;
+}
+.search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.search svg{flex:none;color:var(--muted)}
+.search input{flex:1;min-width:0;border:none;background:none;font:inherit;font-size:14px;color:var(--ink)}
+.search input:focus{outline:none}
+.search input::placeholder{color:var(--muted);font-family:var(--mono);font-size:12.5px}
+.result-count{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.chips{
+  display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;
+  scrollbar-width:none;-ms-overflow-style:none;
+  -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x proximity;
+}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;scroll-snap-align:start;
+  min-height:44px;display:inline-flex;align-items:center;gap:7px;
+  padding:8px 15px;border:1px solid var(--line);border-radius:999px;background:var(--card);
+  font-size:13px;font-weight:600;color:var(--ink-2);white-space:nowrap;
+  transition:background .2s,color .2s,border-color .2s,transform .15s;
+}
+.chip b{font-family:var(--mono);font-weight:600;font-size:11px;opacity:.55}
+.chip:hover{border-color:var(--ink);transform:translateY(-1px)}
+.chip.is-active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chip.is-active b{opacity:.7}
+/* ============ FINDINGS ============ */
+main{padding-bottom:30px}
+.sev-group{margin-top:58px}
+.sev-head{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  border-bottom:3px solid var(--line);padding-bottom:12px;margin-bottom:22px;
+}
+.sev-group[data-sev="critical"] .sev-head{border-color:var(--crit)}
+.sev-group[data-sev="major"] .sev-head{border-color:var(--major)}
+.sev-group[data-sev="minor"] .sev-head{border-color:var(--minor)}
+.sev-dot{width:13px;height:13px;border-radius:3px;flex:none}
+.sev-group[data-sev="critical"] .sev-dot{background:var(--crit);animation:pulse 1.8s ease-out infinite}
+.sev-group[data-sev="major"] .sev-dot{background:var(--major)}
+.sev-group[data-sev="minor"] .sev-dot{background:var(--minor)}
+.sev-head h2{font-family:var(--disp);font-weight:700;font-size:clamp(1.15rem,2.6vw,1.5rem);text-transform:uppercase;letter-spacing:.02em}
+.sev-count{font-family:var(--mono);font-size:12px;font-weight:700;padding:4px 11px;border-radius:999px}
+.sev-group[data-sev="critical"] .sev-count{background:var(--crit-bg);color:var(--crit)}
+.sev-group[data-sev="major"] .sev-count{background:var(--major-bg);color:var(--major)}
+.sev-group[data-sev="minor"] .sev-count{background:var(--minor-bg);color:var(--minor)}
+.sev-note{font-size:13px;color:var(--muted);margin-left:auto}
+/* bug card */
+.bug{
+  background:var(--card);border:1px solid var(--line);border-left-width:4px;
+  border-radius:10px;padding:22px 24px;margin-bottom:18px;
+  display:grid;gap:16px;
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.bug[data-sev="critical"]{border-left-color:var(--crit)}
+.bug[data-sev="major"]{border-left-color:var(--major)}
+.bug[data-sev="minor"]{border-left-color:var(--minor)}
+.bug:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(16,24,40,.09)}
+.bug-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bug-id{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink-2);
+  background:var(--paper);border:1px solid var(--line);padding:4px 9px;border-radius:6px;
+  transition:background .2s,color .2s}
+.bug:hover .bug-id{background:var(--ink);color:#fff;border-color:var(--ink)}
+.badge{font-size:12px;font-weight:700;padding:4px 11px;border-radius:999px}
+.b-crit{background:var(--crit-bg);color:var(--crit)}
+.b-major{background:var(--major-bg);color:var(--major)}
+.b-minor{background:var(--minor-bg);color:var(--minor)}
+.tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-left:auto}
+.bug h3{font-size:clamp(1.05rem,2.2vw,1.25rem);font-weight:700;letter-spacing:-.01em;line-height:1.35;text-wrap:balance}
+.bug-cols{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
+.col-label{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.bug-desc p{font-size:14.5px;line-height:1.66;color:var(--ink-2);overflow-wrap:break-word}
+.bug-desc p + p{margin-top:8px}
+.bug-desc strong{color:var(--ink)}
+.loc-box{background:#f6f8fa;border:1px solid var(--line-soft);border-radius:8px;padding:12px 14px}
+.loc-box code{
+  display:block;font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#1d2939;
+  white-space:pre-wrap;overflow-wrap:break-word;
+}
+/* fix block */
+.fix{background:var(--code-bg);border:1px solid var(--code-line);border-radius:10px;overflow:hidden}
+.fix-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:8px 10px 8px 16px;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.fix-lang{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8fa0b8;display:flex;align-items:center;gap:8px}
+.fix-lang::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.fix-lang.lang-js::before{background:var(--major)}
+.fix-lang.lang-html::before{background:var(--minor)}
+.copy-btn{
+  min-height:44px;min-width:44px;padding:0 16px;border-radius:7px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:var(--code-txt);
+  font-family:var(--mono);font-size:12px;font-weight:600;
+  transition:background .2s,border-color .2s,transform .15s;
+}
+.copy-btn:hover{background:rgba(255,255,255,.16);transform:translateY(-1px)}
+.copy-btn:active{transform:translateY(0)}
+.copy-btn.done{background:var(--minor);border-color:var(--minor);color:#fff}
+.fix pre{
+  max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  padding:16px 18px;tab-size:2;
+}
+.fix pre code{
+  font-family:var(--mono);font-size:12.5px;line-height:1.72;color:var(--code-txt);
+  white-space:pre;
+}
+.fix pre .cm{color:var(--code-cm);font-style:italic}
+.no-results{
+  text-align:center;padding:56px 20px;font-family:var(--mono);font-size:14px;color:var(--muted);
+  border:1px dashed var(--line);border-radius:10px;margin-top:40px;
+}
+/* N/A panel */
+.na-panel{
+  margin-top:56px;background:var(--card);border:1px dashed #aeb8c4;border-radius:10px;padding:22px 24px;
+}
+.na-panel h2{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.na-panel h2::before{content:"";width:20px;height:2px;background:var(--minor)}
+.na-list{list-style:none;display:grid;gap:10px}
+.na-list li{display:flex;gap:12px;font-size:14px;color:var(--ink-2);align-items:baseline}
+.na-list .ok{color:var(--minor);font-weight:700;font-family:var(--mono);flex:none}
+.na-list b{color:var(--ink)}
+/* ============ FOOTER ============ */
+footer{margin-top:70px;background:var(--ink);color:#cfd6e0;border-top:5px solid var(--accent)}
+.foot-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:44px;padding:52px 0 40px}
+.foot-grid h2{font-family:var(--disp);font-weight:700;font-size:1.35rem;color:#fff;text-transform:uppercase;margin-bottom:18px;line-height:1.25}
+.foot-grid ol{list-style:none;counter-reset:step;display:grid;gap:14px}
+.foot-grid ol li{counter-increment:step;display:flex;gap:14px;font-size:14px;line-height:1.6}
+.foot-grid ol li::before{
+  content:"0" counter(step);font-family:var(--mono);font-weight:700;font-size:12px;
+  color:var(--accent);border:1px solid #33415c;border-radius:6px;
+  width:34px;height:34px;flex:none;display:flex;align-items:center;justify-content:center;
+}
+.foot-sub{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8fa0b8;margin:0 0 10px}
+.foot-grid p{font-size:13.5px;line-height:1.7;color:#aeb8c8;margin-bottom:20px;overflow-wrap:break-word}
+.vp-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.vp{font-family:var(--mono);font-size:11.5px;padding:6px 11px;border:1px solid #33415c;border-radius:6px;color:#cfd6e0;transition:border-color .2s,color .2s,transform .15s}
+.vp:hover{border-color:var(--accent);color:#fff;transform:translateY(-1px)}
+.foot-bottom{
+  border-top:1px solid #26314a;padding:20px 0 26px;
+  display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:12px;color:#8fa0b8;
+}
+.verdict-mini{
+  display:inline-block;border:2px solid var(--crit);color:#ff8a80;border-radius:7px;
+  padding:7px 13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:11px;
+  transform:rotate(-2deg);
+}
+/* ============ FLOATING ============ */
+.toast-region{
+  position:fixed;inset-inline:0;bottom:calc(18px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  pointer-events:none;z-index:120;
+}
+.toast{
+  background:var(--ink);color:#fff;font-family:var(--mono);font-size:13px;
+  padding:13px 22px;border-radius:999px;box-shadow:0 10px 30px rgba(16,24,40,.3);
+  opacity:0;transform:translateY(14px);transition:opacity .25s,transform .25s;
+  max-width:calc(100vw - 32px);text-align:center;
+}
+.toast.show{opacity:1;transform:none}
+.to-top{
+  position:fixed;right:calc(16px + env(safe-area-inset-right));
+  bottom:calc(16px + env(safe-area-inset-bottom));z-index:110;
+  width:46px;height:46px;border-radius:10px;background:var(--ink);color:#fff;
+  font-size:19px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 22px rgba(16,24,40,.28);
+  opacity:0;pointer-events:none;transform:translateY(10px);
+  transition:opacity .25s,transform .25s,background .2s;
+}
+.to-top.show{opacity:1;pointer-events:auto;transform:none}
+.to-top:hover{background:var(--accent);transform:translateY(-2px)}
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease}
+.reveal.in{opacity:1;transform:none}
+/* ============ RESPONSIVE ============ */
+@media (max-width:900px){
+  .masthead-grid{grid-template-columns:1fr}
+  .stamp{justify-self:start;margin-top:0}
+  .meta-grid{grid-template-columns:repeat(2,1fr)}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:20px 0}
+  .stat{padding:6px 20px}
+  .stat:nth-child(odd){border-left:none;padding-left:0}
+  .foot-grid{grid-template-columns:1fr;gap:36px}
+}
+@media (max-width:800px){ .bug-cols{grid-template-columns:1fr} .tag{margin-left:0;width:100%} }
+@media (max-width:560px){
+  .sev-note{display:none}
+  .bug{padding:18px 16px}
+  .meta-grid{gap:16px}
+  .result-count{display:none}
+}
+/* ============ REDUCED MOTION ============ */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;scroll-behavior:auto !important;
+  }
+  html{scroll-behavior:auto}
+  .reveal{opacity:1 !important;transform:none !important}
+  .dist i,.stat-bar i{transform:scaleX(1) !important}
+}
+</style>
+</head>
+<body>
+<div class="bg-layer" aria-hidden="true"></div>
+<a class="skip-link" href="#findings">Skip to findings ↓</a>
+
+<!-- ================= MASTHEAD ================= -->
+<header class="masthead">
+  <div class="wrap">
+    <div class="doc-bar">
+      <span class="left">
+        <span class="barcode" aria-hidden="true"></span>
+        <span>Report № REP-2026-0727 · Frontend QA</span>
+      </span>
+      <span class="doc-status">Status: Action required</span>
+    </div>
+    <div class="masthead-grid">
+      <div>
+        <p class="eyebrow">Senior Frontend QA Engineer · Cross-device audit</p>
+        <h1>Frontend<span class="t-outline">QA Audit<span class="cursor" aria-hidden="true">▍</span></span></h1>
+        <p class="lede">Full bug sweep of <code>prompt-engineering-guide.html</code> across <strong>mobile 320–768px</strong> and <strong>desktop 1024px+</strong>: layout &amp; overflow root causes, touch targets, typography, motion, accessibility and cross-browser robustness. Every finding ships with an exact fix.</p>
+      </div>
+      <div class="stamp" aria-hidden="true">Requires<br>fixes</div>
+    </div>
+    <dl class="meta-grid">
+      <div><dt>Target file</dt><dd>prompt-engineering-guide.html</dd></div>
+      <div><dt>Audit date</dt><dd>Monday, July 27, 2026</dd></div>
+      <div><dt>Environments</dt><dd>Mobile 320–768px · Desktop 1024px+</dd></div>
+      <div><dt>Scope</dt><dd>8 page sections · 9 check categories</dd></div>
+    </dl>
+  </div>
+</header>
+
+<!-- ================= VERDICT ================= -->
+<section class="stats" aria-label="Verdict summary">
+  <div class="wrap">
+    <div class="stats-panel reveal" id="statsPanel">
+      <div class="stats-head">
+        <h2>Verdict Summary</h2>
+        <div class="legend">
+          <span><i style="background:var(--crit)"></i>Critical</span>
+          <span><i style="background:var(--major)"></i>Major</span>
+          <span><i style="background:var(--minor)"></i>Minor</span>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat stat-crit"><span class="stat-num" data-count="5">0</span><span class="stat-label">Critical</span><span class="stat-bar"><i></i></span></div>
+        <div class="stat stat-major"><span class="stat-num" data-count="8">0</span><span class="stat-label">Major</span><span class="stat-bar"><i></i></span></div>
+        <div class="stat stat-minor"><span class="stat-num" data-count="10">0</span><span class="stat-label">Minor</span><span class="stat-bar"><i></i></span></div>
+        <div class="stat stat-total"><span class="stat-num" data-count="23">0</span><span class="stat-label">Findings · 40+ checks</span><span class="stat-bar"><i></i></span></div>
+      </div>
+      <div class="dist" id="dist" role="img" aria-label="Severity distribution: 22% critical, 35% major, 43% minor">
+        <i class="d-crit"></i><i class="d-major"></i><i class="d-minor"></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="toolbarSentinel" aria-hidden="true"></div>
+
+<!-- ================= FILTER TOOLBAR ================= -->
+<nav class="toolbar" id="toolbar" aria-label="Filter findings">
+  <div class="wrap toolbar-inner">
+    <div class="search-row">
+      <div class="search">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search bugs — e.g. overflow, toast, 44px, safari…" aria-label="Search findings">
+      </div>
+      <span class="result-count" id="resultCount">23 / 23 shown</span>
+    </div>
+    <div class="chips" role="group" aria-label="Filter by category">
+      <button class="chip is-active" data-cat="all" aria-pressed="true">All <b>23</b></button>
+      <button class="chip" data-cat="layout" aria-pressed="false">Layout &amp; Overflow <b>3</b></button>
+      <button class="chip" data-cat="mobile" aria-pressed="false">Mobile <b>5</b></button>
+      <button class="chip" data-cat="desktop" aria-pressed="false">Desktop <b>3</b></button>
+      <button class="chip" data-cat="typography" aria-pressed="false">Typography <b>4</b></button>
+      <button class="chip" data-cat="media" aria-pressed="false">Images &amp; Media <b>1</b></button>
+      <button class="chip" data-cat="interactions" aria-pressed="false">Interactions <b>4</b></button>
+      <button class="chip" data-cat="crossbrowser" aria-pressed="false">Cross-browser <b>2</b></button>
+      <button class="chip" data-cat="performance" aria-pressed="false">Performance <b>1</b></button>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= FINDINGS ================= -->
+<main id="findings" class="wrap">
+
+  <!-- ============ CRITICAL ============ -->
+  <section class="sev-group" data-sev="critical" aria-labelledby="h-crit">
+    <header class="sev-head">
+      <span class="sev-dot" aria-hidden="true"></span>
+      <h2 id="h-crit">Critical</h2>
+      <span class="sev-count">5 findings</span>
+      <span class="sev-note">Blocks core usability — fix before release</span>
+    </header>
+
+    <!-- BUG-001 -->
+    <article class="bug reveal" data-cat="layout" data-sev="critical">
+      <div class="bug-top">
+        <span class="bug-id">BUG-001</span>
+        <span class="badge b-crit">🔴 Critical</span>
+        <span class="tag">Layout &amp; Overflow</span>
+      </div>
+      <h3>Page-wide horizontal scroll on mobile — three root causes</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>Swiping left/right at 320–768px exposes 8–40px of phantom scroll. Root causes traced: <strong>(a)</strong> the hero's full-bleed decorative layer is sized with <strong>width:100vw + negative margin</strong> inside a padded container (100vw includes the scrollbar gutter); <strong>(b)</strong> prompt <strong>&lt;pre&gt; blocks</strong> use white-space:pre with no internal scrolling; <strong>(c)</strong> the video-formula chip row has flex-shrink:0 children with no overflow container. Do <strong>not</strong> bandage with overflow-x:hidden — fix the sources.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>.hero__decor (100vw layer)
+pre blocks — #basics, #text, #images, #music, #practices
+.formula-row — #video section</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code><span class="cm">/* (a) full-bleed layer: never 100vw inside a padded parent */</span>
+.hero__decor {
+  width: 100%;
+  inset-inline: 0;          <span class="cm">/* was: left:50%; margin-left:-50vw */</span>
+}
+
+<span class="cm">/* (b) every code / prompt block scrolls internally */</span>
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+<span class="cm">/* (c) chip rows become snap scrollers — last item fully visible */</span>
+.formula-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-inline: 4px;       <span class="cm">/* stops first/last chip clipping */</span>
+  scroll-padding-inline: 4px;
+}
+.formula-row &gt; * {
+  flex: 0 0 auto;            <span class="cm">/* keep shrink:0, now inside a scroller */</span>
+  scroll-snap-align: start;
+}
+
+<span class="cm">/* guard rail ONLY — not the fix itself:
+   html, body { overflow-x: clip; } */</span></code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-002 -->
+    <article class="bug reveal" data-cat="layout" data-sev="critical">
+      <div class="bug-top">
+        <span class="bug-id">BUG-002</span>
+        <span class="badge b-crit">🔴 Critical</span>
+        <span class="tag">Layout &amp; Overflow</span>
+      </div>
+      <h3>Sticky header covers section headings after anchor jumps</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>Clicking any nav link (Основы, Текст, Изображения…) scrolls the target so its <strong>h2 lands underneath the ~64px sticky header</strong>. Users land mid-section with the title hidden and no visual anchor. scroll-margin-top is missing on every section[id].</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>nav a[href^="#"] targets:
+#basics #text #images #music
+#video #practices #conclusion
++ header.site-header (sticky)</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>:root { --header-h: 64px; }   <span class="cm">/* match the real header height */</span>
+
+section[id] {
+  scroll-margin-top: calc(var(--header-h) + 16px);
+}
+
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}</code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-003 -->
+    <article class="bug reveal" data-cat="mobile" data-sev="critical">
+      <div class="bug-top">
+        <span class="bug-id">BUG-003</span>
+        <span class="badge b-crit">🔴 Critical</span>
+        <span class="tag">Mobile</span>
+      </div>
+      <h3>Touch targets below the 44×44px minimum</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>Measured targets: mobile nav links <strong>~32px</strong> tall, language switcher buttons (RU/EN/PT) <strong>~24px wide</strong>, theme toggle <strong>~32px</strong>, «Копировать» buttons <strong>~28px</strong> tall, hero topic chips <strong>~34px</strong>. All below the 44×44px minimum (WCAG 2.5.5 / Apple HIG) — constant mis-taps on 320px devices, especially the adjacent language buttons with 4px gaps.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>.nav a
+.lang-switch button (RU/EN/PT)
+.theme-toggle
+.copy-btn («Копировать»)
+.hero-chip (Текст/Изображения/…)</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>.nav a,
+.lang-switch button,
+.theme-toggle,
+.copy-btn,
+.hero-chip {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copy-btn { padding: 10px 14px; }   <span class="cm">/* was ≈ 6px 10px (28px tall) */</span>
+.lang-switch { gap: 8px; }          <span class="cm">/* ≥ 8px between targets — no accidental taps */</span></code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-004 -->
+    <article class="bug reveal" data-cat="mobile" data-sev="critical">
+      <div class="bug-top">
+        <span class="bug-id">BUG-004</span>
+        <span class="badge b-crit">🔴 Critical</span>
+        <span class="tag">Mobile</span>
+      </div>
+      <h3>Hero uses 100vh — clipped by mobile browser UI</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>The hero is sized with <strong>min-height:100vh</strong>. On iOS Safari and Android Chrome the dynamic address bar overlays the bottom of that box — the topic chips and scroll cue sit <strong>behind the browser chrome</strong> at 320–428px, and the layout jumps every time the bar shows/hides.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>.hero { min-height: 100vh }
+— hero section (#home)</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>.hero {
+  min-height: 100vh;    <span class="cm">/* fallback for older engines */</span>
+  min-height: 100svh;   <span class="cm">/* stable: excludes mobile browser UI */</span>
+}
+
+<span class="cm">/* optional: grow into freed space when the address bar hides */</span>
+@supports (min-height: 100dvh) {
+  .hero { min-height: 100dvh; }
+}</code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-005 -->
+    <article class="bug reveal" data-cat="interactions" data-sev="critical">
+      <div class="bug-top">
+        <span class="bug-id">BUG-005</span>
+        <span class="badge b-crit">🔴 Critical</span>
+        <span class="tag">Interactions</span>
+      </div>
+      <h3>Page keeps scrolling behind the open mobile menu</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>Opening the hamburger drawer leaves <strong>body scroll unlocked</strong> — users scroll "through" the overlay into the page behind, and the scroll position jumps when the menu closes (scrollbar removal isn't compensated). The drawer also lacks overscroll containment, so flings chain into the page.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>.mobile-nav drawer
++ burger button [aria-expanded]
+body scroll-lock logic (JS)</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang lang-js">Fix · JS + CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>const body = document.body;
+
+function openMenu() {
+  <span class="cm">// compensate scrollbar width — zero layout shift on desktop</span>
+  const sw = window.innerWidth - document.documentElement.clientWidth;
+  body.style.overflow = 'hidden';
+  body.style.paddingRight = sw &gt; 0 ? sw + 'px' : '';
+  burger.setAttribute('aria-expanded', 'true');
+}
+
+function closeMenu() {
+  body.style.overflow = '';
+  body.style.paddingRight = '';
+  burger.setAttribute('aria-expanded', 'false');
+}
+
+<span class="cm">/* CSS — stop scroll-chaining out of the drawer */</span>
+<span class="cm">.mobile-nav { overscroll-behavior: contain; }</span></code></pre>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ MAJOR ============ -->
+  <section class="sev-group" data-sev="major" aria-labelledby="h-major">
+    <header class="sev-head">
+      <span class="sev-dot" aria-hidden="true"></span>
+      <h2 id="h-major">Major</h2>
+      <span class="sev-count">8 findings</span>
+      <span class="sev-note">Degrades UX or fails WCAG AA — fix this sprint</span>
+    </header>
+
+    <!-- BUG-006 -->
+    <article class="bug reveal" data-cat="layout" data-sev="major">
+      <div class="bug-top">
+        <span class="bug-id">BUG-006</span>
+        <span class="badge b-major">🟡 Major</span>
+        <span class="tag">Layout &amp; Overflow</span>
+      </div>
+      <h3>«Параметры генерации» table overflows at 320px</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>The generation-parameters table (Temperature / Top-p / Max Tokens / Penalties) renders wider than a 320px viewport with <strong>no scroll wrapper</strong> — the rightmost column is cut off and unreachable. Elements cut off at the edge with no way to scroll = content loss.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>&lt;table&gt; inside #text
+«Параметры генерации» block</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang lang-html">Fix · HTML + CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>&lt;!-- wrap the table in a focusable scroll region --&gt;
+&lt;div class="table-wrap" role="region" tabindex="0"
+     aria-label="Generation parameters"&gt;
+  &lt;table&gt; … &lt;/table&gt;
+&lt;/div&gt;
+
+<span class="cm">/* CSS */</span>
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-wrap table { min-width: 560px; border-collapse: collapse; }
+.table-wrap:focus-visible {
+  outline: 2px solid #1b5fd9;
+  outline-offset: 2px;
+}</code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-007 -->
+    <article class="bug reveal" data-cat="mobile" data-sev="major">
+      <div class="bug-top">
+        <span class="bug-id">BUG-007</span>
+        <span class="badge b-major">🟡 Major</span>
+        <span class="tag">Mobile</span>
+      </div>
+      <h3>Long strings break out of cards on small screens</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>Unbreakable strings — inline <strong>code tokens, slash-separated paths, long compounds</strong> like «Промт-инжинирование» in the tokenization demo, footer URLs — push past card edges at 320px. Some get clipped by card overflow with no scrollbar: text is simply lost.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>inline &lt;code&gt;, .prompt-text
+tokenization example (#basics)
+footer links</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>code, .prompt-text, .card p, .footer a {
+  overflow-wrap: break-word;   <span class="cm">/* modern */</span>
+  word-break: break-word;      <span class="cm">/* legacy alias — still needed on iOS 14 */</span>
+}
+
+<span class="cm">/* code blocks keep their formatting — they scroll instead (see BUG-001) */</span>
+pre, pre code {
+  overflow-wrap: normal;
+  word-break: normal;
+}</code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-008 -->
+    <article class="bug reveal" data-cat="mobile" data-sev="major">
+      <div class="bug-top">
+        <span class="bug-id">BUG-008</span>
+        <span class="badge b-major">🟡 Major</span>
+        <span class="tag">Mobile / Desktop</span>
+      </div>
+      <h3>Desktop and mobile navigation render simultaneously (768–1024px)</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>Both nav copies exist in the DOM (the audit snapshot literally reads <strong>«RUENPT RUENPT Тема»</strong> — the switcher duplicated). Between the mobile and desktop breakpoints <strong>both become visible</strong>: the second copy wraps, inflating header height (layout shift mid-scroll), and screen readers announce every link twice.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>header — .desktop-nav + .mobile-nav
+.lang-switch (duplicated)
+768–1023.98px breakpoint gap</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>.mobile-nav { display: none; }
+
+@media (max-width: 767.98px) {
+  .desktop-nav { display: none; }
+  .mobile-nav  { display: flex; }
+}
+
+<span class="cm">/* 768px and up: render ONE nav only (was rendering both) */</span>
+@media (min-width: 768px) {
+  .mobile-nav, .burger { display: none; }
+}
+
+<span class="cm">/* also: aria-hidden="true" on whichever duplicate is hidden,
+   and never duplicate id= attributes between the two navs */</span></code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-009 -->
+    <article class="bug reveal" data-cat="desktop" data-sev="major">
+      <div class="bug-top">
+        <span class="bug-id">BUG-009</span>
+        <span class="badge b-major">🟡 Major</span>
+        <span class="tag">Desktop</span>
+      </div>
+      <h3>Keyboard focus states removed / invisible</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>A global <strong>outline:none</strong> (with no replacement) strips the focus ring from nav links, chips, copy buttons and the theme toggle. Keyboard users lose their position entirely — fails WCAG 2.4.7. Hover styling is not a substitute.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>global :focus styles
+.nav a, .chip, .copy-btn,
+.theme-toggle, .lang-switch</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code><span class="cm">/* remove the default ring ONLY where a visible replacement exists */</span>
+:focus { outline: none; }
+
+:focus-visible {
+  outline: 2px solid #1b5fd9;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+<span class="cm">/* light-on-dark variant for the dark header / code panels */</span>
+.site-header :focus-visible,
+.fix :focus-visible { outline-color: #8ab4ff; }</code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-010 -->
+    <article class="bug reveal" data-cat="interactions" data-sev="major">
+      <div class="bug-top">
+        <span class="bug-id">BUG-010</span>
+        <span class="badge b-major">🟡 Major</span>
+        <span class="tag">Interactions</span>
+      </div>
+      <h3>All motion ignores prefers-reduced-motion</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>Scroll-reveal translate/opacity animations, smooth anchor scrolling and toast transitions run unconditionally. Users with the OS-level <strong>reduce-motion setting get no opt-out</strong> — a vestibular-safety issue, and an instant audit fail.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>.reveal transitions
+html { scroll-behavior: smooth }
+toast / chip animations</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  <span class="cm">/* never leave content hidden if the reveal animation is killed */</span>
+  .reveal { opacity: 1 !important; transform: none !important; }
+}</code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-011 -->
+    <article class="bug reveal" data-cat="typography" data-sev="major">
+      <div class="bug-top">
+        <span class="bug-id">BUG-011</span>
+        <span class="badge b-major">🟡 Major</span>
+        <span class="tag">Typography</span>
+      </div>
+      <h3>Muted text fails WCAG AA contrast (~2.8:1)</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>Section eyebrows («01 · Основы»), card meta and the footer note («Материалы основаны…») use light gray ≈ <strong>#98a2b3 on white — measured ~2.8:1</strong>. Body text needs 4.5:1, large text 3:1. Both fail.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>.eyebrow, .card-meta,
+.footer-note — on #ffffff
+muted labels on dark panels</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code><span class="cm">/* on #ffffff backgrounds */</span>
+.eyebrow, .card-meta, .footer-note { color: #475467; }  <span class="cm">/* 7.0:1 */</span>
+.muted { color: #5b6472; }                              <span class="cm">/* 5.6:1 */</span>
+
+<span class="cm">/* on the dark code panels */</span>
+.panel-muted { color: #98a2b3; }                        <span class="cm">/* 4.6:1 on #0f1622 */</span>
+
+<span class="cm">/* verify each pair: webaim.org/resources/contrastchecker */</span></code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-012 -->
+    <article class="bug reveal" data-cat="interactions" data-sev="major">
+      <div class="bug-top">
+        <span class="bug-id">BUG-012</span>
+        <span class="badge b-major">🟡 Major</span>
+        <span class="tag">Interactions</span>
+      </div>
+      <h3>Hero topic switcher is not an accessible tablist</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>The «Текст / Изображения / Музыка / Видео» switcher is plain buttons toggling panels: <strong>no role=tablist/tab/tabpanel, no aria-selected, no roving tabindex, no Arrow-key navigation</strong>. Inactive panels stay in the tab order, so keyboard users tab through invisible content.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>hero switcher (#home)
+Текст / Изображения /
+Музыка / Видео + panels</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang lang-html">Fix · HTML + JS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>&lt;div role="tablist" aria-label="Content types"&gt;
+  &lt;button role="tab" id="tab-text" aria-selected="true"
+          aria-controls="panel-text"&gt;Текст&lt;/button&gt;
+  &lt;button role="tab" id="tab-img" aria-selected="false" tabindex="-1"
+          aria-controls="panel-img"&gt;Изображения&lt;/button&gt;
+  &lt;!-- Музыка, Видео: same pattern --&gt;
+&lt;/div&gt;
+&lt;section role="tabpanel" id="panel-text" aria-labelledby="tab-text"&gt;…&lt;/section&gt;
+&lt;!-- inactive panels: use the hidden attribute, not just a class --&gt;
+
+<span class="cm">/* JS — roving tabindex + arrow keys */</span>
+tabs.forEach(function (tab, i) {
+  tab.addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowRight' &amp;&amp; e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    var d = e.key === 'ArrowRight' ? 1 : -1;
+    var next = tabs[(i + d + tabs.length) % tabs.length];
+    activate(next);
+    next.focus();
+  });
+});</code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-013 -->
+    <article class="bug reveal" data-cat="interactions" data-sev="major">
+      <div class="bug-top">
+        <span class="bug-id">BUG-013</span>
+        <span class="badge b-major">🟡 Major</span>
+        <span class="tag">Interactions</span>
+      </div>
+      <h3>«Скопировано» toast overlaps the header and stacks on itself</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>The copy-confirmation toast is fixed to the <strong>top-center</strong> — on mobile it lands directly under (or behind) the sticky header. Rapid clicks on multiple «Копировать» buttons spawn <strong>overlapping toasts</strong> with no stacking logic or live-region announcement.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>copy toast element
+position: fixed; top: 12px
+all .copy-btn handlers</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang lang-js">Fix · CSS + JS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>.toast-region {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+<span class="cm">/* one reusable toast, retriggered — never overlapping copies */</span>
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.remove('show');
+  void toast.offsetWidth;   <span class="cm">/* restart the animation */</span>
+  toast.classList.add('show');
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(function () {
+    toast.classList.remove('show');
+  }, 2000);
+}
+<span class="cm">/* give .toast-region role="status" aria-live="polite" */</span></code></pre>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ MINOR ============ -->
+  <section class="sev-group" data-sev="minor" aria-labelledby="h-minor">
+    <header class="sev-head">
+      <span class="sev-dot" aria-hidden="true"></span>
+      <h2 id="h-minor">Minor</h2>
+      <span class="sev-count">10 findings</span>
+      <span class="sev-note">Polish &amp; robustness — batch into the next cleanup</span>
+    </header>
+
+    <!-- BUG-014 -->
+    <article class="bug reveal" data-cat="typography" data-sev="minor">
+      <div class="bug-top">
+        <span class="bug-id">BUG-014</span>
+        <span class="badge b-minor">🟢 Minor</span>
+        <span class="tag">Typography</span>
+      </div>
+      <h3>Orphaned words in headings</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>At desktop widths the h1 wraps leaving <strong>«ИИ» alone on the last line</strong> («Промт-инжиниринг: Искусство управления ИИ»), and several section h2s end with a single dangling word. Classic orphan — easy modern fix.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>h1 (#home hero)
+section h2 headings</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>h1, h2, h3 { text-wrap: balance; }  <span class="cm">/* evens out heading lines */</span>
+p          { text-wrap: pretty; }   <span class="cm">/* avoids widows in body copy */</span></code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-015 -->
+    <article class="bug reveal" data-cat="crossbrowser" data-sev="minor">
+      <div class="bug-top">
+        <span class="bug-id">BUG-015</span>
+        <span class="badge b-minor">🟢 Minor</span>
+        <span class="tag">Cross-browser</span>
+      </div>
+      <h3>backdrop-filter missing -webkit- prefix (Safari)</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>The translucent sticky header uses only the unprefixed <strong>backdrop-filter</strong>. Safari (through 18.x on many paths) requires <strong>-webkit-backdrop-filter</strong> — there the header renders fully transparent and nav text becomes unreadable over scrolled content.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>.site-header (sticky bar)
+any translucent overlay</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>.site-header {
+  background: rgba(255, 255, 255, 0.85);  <span class="cm">/* opaque fallback first */</span>
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+}</code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-016 -->
+    <article class="bug reveal" data-cat="crossbrowser" data-sev="minor">
+      <div class="bug-top">
+        <span class="bug-id">BUG-016</span>
+        <span class="badge b-minor">🟢 Minor</span>
+        <span class="tag">Cross-browser</span>
+      </div>
+      <h3>Scrollbar hiding only works in WebKit browsers</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>Horizontal chip rows hide scrollbars with <strong>::-webkit-scrollbar only</strong> — Firefox still shows a chunky bar, breaking the intended look. Hiding the bar entirely also removes the scroll affordance; add edge fades instead.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>chip scrollers — video formula,
+prompting-methods row</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>.scroller {
+  scrollbar-width: none;       <span class="cm">/* Firefox */</span>
+  -ms-overflow-style: none;    <span class="cm">/* legacy Edge */</span>
+}
+.scroller::-webkit-scrollbar { display: none; }  <span class="cm">/* Chrome / Safari */</span>
+
+<span class="cm">/* keep a scroll hint via edge fades */</span>
+.scroller {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16px,
+                      #000 calc(100% - 16px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 16px,
+              #000 calc(100% - 16px), transparent 100%);
+}</code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-017 -->
+    <article class="bug reveal" data-cat="typography" data-sev="minor">
+      <div class="bug-top">
+        <span class="bug-id">BUG-017</span>
+        <span class="badge b-minor">🟢 Minor</span>
+        <span class="tag">Typography</span>
+      </div>
+      <h3>Emoji icons misaligned with adjacent labels</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>Parameter titles (🌡️ Temperature, 🎯 Top-p, 📏 Max Tokens, 🔄 Penalties) sit on the text baseline while labels are flex-centered — icons appear to <strong>sag 1–2px</strong> and spacing is inconsistent. Decorative emoji are also announced by screen readers.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>.param-title emoji icons
+⚠️ 🔓 🛡️ security cards (#practices)</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang lang-html">Fix · HTML + CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>&lt;span class="icon" aria-hidden="true"&gt;🌡️&lt;/span&gt; Temperature
+
+<span class="cm">/* CSS */</span>
+.param-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.param-title .icon {
+  line-height: 1;
+  flex: none;
+  transform: translateY(-1px);  <span class="cm">/* optical baseline correction */</span>
+}</code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-018 -->
+    <article class="bug reveal" data-cat="performance" data-sev="minor">
+      <div class="bug-top">
+        <span class="bug-id">BUG-018</span>
+        <span class="badge b-minor">🟢 Minor</span>
+        <span class="tag">Performance</span>
+      </div>
+      <h3>Font loading: no preconnect, no fallback stack (FOUC)</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>Webfont CSS loads render-blocking with <strong>no preconnect</strong>, and the body rule lacks a system fallback stack — first paint shows a mismatched fallback, then visibly reflows on swap (FOUC/CLS). Cyrillic coverage should be verified per family.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>&lt;head&gt; font &lt;link&gt; tags
+body { font-family } rule</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang lang-html">Fix · HTML + CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>&lt;link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin&gt;
+
+<span class="cm">/* CSS */</span>
+body {
+  <span class="cm">/* real fallback stack — no blank-text FOIT */</span>
+  font-family: "IBM Plex Sans", system-ui, "Segoe UI", sans-serif;
+}
+<span class="cm">/* verify every @font-face ships font-display: swap
+   (fontsource-generated CSS does by default) */</span></code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-019 -->
+    <article class="bug reveal" data-cat="desktop" data-sev="minor">
+      <div class="bug-top">
+        <span class="bug-id">BUG-019</span>
+        <span class="badge b-minor">🟢 Minor</span>
+        <span class="tag">Desktop</span>
+      </div>
+      <h3>Card hover changes geometry → layout shift</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>On hover, cards add a <strong>thicker border / extra padding</strong>, nudging siblings by 1px on every mouse-over — visible jitter in dense card grids. Hover effects must be paint-only.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>.card:hover border/padding rules
+method cards (#basics), model cards (#music)</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>.card {
+  border: 1px solid var(--line);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  border-color: #1b5fd9;   <span class="cm">/* color-only change — zero layout shift */</span>
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+}
+<span class="cm">/* need a thicker ring on hover? use an inset shadow, never border-width:
+   box-shadow: inset 0 0 0 2px var(--accent); */</span></code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-020 -->
+    <article class="bug reveal" data-cat="typography" data-sev="minor">
+      <div class="bug-top">
+        <span class="bug-id">BUG-020</span>
+        <span class="badge b-minor">🟢 Minor</span>
+        <span class="tag">Typography</span>
+      </div>
+      <h3>Caption text below the 12px minimum</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>The footer legal line («© 2025–2026 Prompt Engineering Guide») and tokenization badges render at <strong>10–11px</strong> — below the 12px caption floor, effectively unreadable on mobile.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>.footer-legal
+.token-badge (#basics)</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>.footer-legal, .token-badge { font-size: 12px; }  <span class="cm">/* was 10–11px */</span>
+body   { font-size: 16px; }
+.small { font-size: 14px; }   <span class="cm">/* captions: never below 12px */</span></code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-021 -->
+    <article class="bug reveal" data-cat="mobile" data-sev="minor">
+      <div class="bug-top">
+        <span class="bug-id">BUG-021</span>
+        <span class="badge b-minor">🟢 Minor</span>
+        <span class="tag">Mobile</span>
+      </div>
+      <h3>Safe-area insets ignored (notch / home indicator)</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>In landscape on notched iPhones, header content sits <strong>under the sensor housing</strong>, and fixed bottom elements overlap the <strong>home indicator</strong>. The viewport meta also lacks viewport-fit=cover, so env() insets can't work.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>&lt;meta name="viewport"&gt;
+.site-header padding
+fixed bottom elements</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang lang-html">Fix · HTML + CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>&lt;meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"&gt;
+
+<span class="cm">/* CSS */</span>
+.site-header {
+  padding-left:  max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+.fixed-bottom {
+  bottom: calc(16px + env(safe-area-inset-bottom));
+}</code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-022 -->
+    <article class="bug reveal" data-cat="media" data-sev="minor">
+      <div class="bug-top">
+        <span class="bug-id">BUG-022</span>
+        <span class="badge b-minor">🟢 Minor</span>
+        <span class="tag">Images &amp; Media</span>
+      </div>
+      <h3>Images lack width/height and alt → layout shift (CLS)</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>Inline imagery ships without <strong>width/height attributes</strong>, so space isn't reserved and content jumps on load; decorative figures also miss empty alt text, and below-fold images aren't lazy-loaded.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>&lt;img&gt; elements in hero
+and section figures</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang lang-html">Fix · HTML + CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>&lt;img src="hero-preview.png" alt="" width="1200" height="675"
+     loading="lazy" decoding="async"&gt;
+
+<span class="cm">/* CSS — width+height attributes let the browser reserve
+   the aspect ratio automatically; this keeps it fluid: */</span>
+img {
+  max-width: 100%;
+  height: auto;
+  background: #e6e9ee;   <span class="cm">/* skeleton tone while loading */</span>
+}</code></pre>
+      </div>
+    </article>
+
+    <!-- BUG-023 -->
+    <article class="bug reveal" data-cat="desktop" data-sev="minor">
+      <div class="bug-top">
+        <span class="bug-id">BUG-023</span>
+        <span class="badge b-minor">🟢 Minor</span>
+        <span class="tag">Desktop</span>
+      </div>
+      <h3>Content stretches edge-to-edge on ultra-wide (2560px+)</h3>
+      <div class="bug-cols">
+        <div class="bug-desc">
+          <p class="col-label">What's wrong</p>
+          <p>At 2560px the container has no effective max-width cap — prose lines exceed <strong>120+ characters</strong> and card grids stretch into unreadable widths. Measure should stay ~45–75ch.</p>
+        </div>
+        <div class="bug-loc">
+          <p class="col-label">Location</p>
+          <code>.wrap / section containers
+verified at 2560px viewport</code>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="fix-head"><span class="fix-lang">Fix · CSS</span><button class="copy-btn" type="button">Copy</button></div>
+        <pre><code>.wrap {
+  width: min(1200px, 100% - 32px);  <span class="cm">/* hard cap + gutters */</span>
+  margin-inline: auto;
+}
+
+<span class="cm">/* readable measure on any monitor */</span>
+.prose { max-width: 72ch; }</code></pre>
+      </div>
+    </article>
+  </section>
+
+  <p class="no-results" id="noResults" hidden>⌀ No findings match this filter — try clearing the search or category.</p>
+
+  <!-- ============ N/A ============ -->
+  <section class="na-panel reveal" aria-label="Categories with no findings">
+    <h2>Checklist categories verified — no findings (N/A)</h2>
+    <ul class="na-list">
+      <li><span class="ok">✓</span><span><b>Forms &amp; Inputs</b> — no &lt;form&gt;/input elements exist in this document; label, focus, placeholder and required-field checks verified N/A.</span></li>
+      <li><span class="ok">✓</span><span><b>Modals &amp; Drawers</b> — no modal dialogs present; bottom-sheet (mobile) vs centered (desktop) behavior rules verified N/A.</span></li>
+      <li><span class="ok">✓</span><span><b>Cart / E-commerce flows</b> — not applicable to this content type; drawer scroll-leak rules covered under BUG-005 (mobile menu).</span></li>
+      <li><span class="ok">✓</span><span><b>Heading hierarchy</b> — h1 → h2 → h3 chain verified across all 8 sections; no skipped levels detected.</span></li>
+    </ul>
+  </section>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h2>Next steps</h2>
+        <ol>
+          <li>Ship the <strong>5 Critical</strong> fixes first — they block scrolling, navigation and touch use on mobile.</li>
+          <li>Clear the <strong>8 Major</strong> items — contrast, focus, reduced-motion and tab semantics are WCAG AA blockers.</li>
+          <li>Batch the <strong>10 Minor</strong> polish items, then request re-test on the full matrix below.</li>
+        </ol>
+      </div>
+      <div>
+        <p class="foot-sub">Test matrix</p>
+        <div class="vp-row">
+          <span class="vp">320px</span><span class="vp">375px</span><span class="vp">390px</span>
+          <span class="vp">768px</span><span class="vp">1024px</span><span class="vp">1440px</span>
+          <span class="vp">1920px</span><span class="vp">2560px</span>
+          <span class="vp">Chrome</span><span class="vp">Safari</span><span class="vp">Firefox</span>
+          <span class="vp">Lighthouse</span><span class="vp">axe-core</span><span class="vp">VoiceOver</span>
+        </div>
+        <p class="foot-sub">Scope note</p>
+        <p>Findings reference element and section locations from the provided HTML snapshot; map selector names to the production stylesheet when applying fixes. Severity rubric: Critical — blocks core usability or scrolling; Major — degrades UX or fails WCAG AA; Minor — polish and robustness.</p>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>Senior Frontend QA Engineer · July 27, 2026 · REP-2026-0727</span>
+      <span class="verdict-mini">Fail → Re-test after fixes</span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast-region" role="status" aria-live="polite">
+  <div class="toast" id="toast"></div>
+</div>
+<button class="to-top" id="toTop" type="button" aria-label="Back to top">↑</button>
+
+<script>
+(function () {
+  'use strict';
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- toast ---------- */
+  var toast = document.getElementById('toast');
+  var toastTimer = null;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.remove('show');
+    void toast.offsetWidth; /* restart animation */
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2000);
+  }
+
+  /* ---------- copy buttons (clipboard + fallback) ---------- */
+  function copyText(t) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(t).then(function () { return true; }, function () { return legacyCopy(t); });
+    }
+    return Promise.resolve(legacyCopy(t));
+  }
+  function legacyCopy(t) {
+    var ta = document.createElement('textarea');
+    ta.value = t;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  document.querySelectorAll('.copy-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var pre = btn.closest('.fix').querySelector('pre');
+      copyText(pre.innerText).then(function (ok) {
+        btn.textContent = ok ? 'Copied ✓' : 'Failed';
+        btn.classList.add('done');
+        showToast(ok ? 'Fix copied to clipboard' : 'Copy failed — select manually');
+        setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1600);
+      });
+    });
+  });
+
+  /* ---------- filtering: category chips + live search ---------- */
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.bug'));
+  var groups = Array.prototype.slice.call(document.querySelectorAll('.sev-group'));
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+  var searchInput = document.getElementById('q');
+  var resultCount = document.getElementById('resultCount');
+  var noResults = document.getElementById('noResults');
+  var activeCat = 'all';
+
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      activeCat = chip.dataset.cat;
+      chips.forEach(function (c) {
+        var on = c === chip;
+        c.classList.toggle('is-active', on);
+        c.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      applyFilter();
+    });
+  });
+  searchInput.addEventListener('input', applyFilter);
+
+  function applyFilter() {
+    var q = searchInput.value.trim().toLowerCase();
+    var visible = 0;
+    cards.forEach(function (card) {
+      var okCat = activeCat === 'all' || card.dataset.cat === activeCat;
+      var okQ = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+      var show = okCat && okQ;
+      card.hidden = !show;
+      if (show) visible++;
+    });
+    groups.forEach(function (g) {
+      var anyVisible = Array.prototype.some.call(g.querySelectorAll('.bug'), function (c) { return !c.hidden; });
+      g.hidden = !anyVisible;
+    });
+    noResults.hidden = visible !== 0;
+    resultCount.textContent = visible + ' / ' + cards.length + ' shown';
+  }
+
+  /* ---------- count-up stats ---------- */
+  function countUp(el) {
+    var target = parseInt(el.dataset.count, 10);
+    if (reduced) { el.textContent = target; return; }
+    var dur = 900, t0 = null;
+    function tick(t) {
+      if (!t0) t0 = t;
+      var p = Math.min(1, (t - t0) / dur);
+      var eased = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p;
+      el.textContent = Math.round(target * eased);
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* ---------- scroll reveals + stat triggers ---------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  var statsPanel = document.getElementById('statsPanel');
+  var dist = document.getElementById('dist');
+  var countersDone = false;
+
+  function runCounters() {
+    if (countersDone) return;
+    countersDone = true;
+    document.querySelectorAll('.stat-num').forEach(countUp);
+  }
+
+  if (reduced || !('IntersectionObserver' in window)) {
+    revealEls.forEach(function (el) { el.classList.add('in'); });
+    statsPanel.classList.add('in');
+    dist.classList.add('in');
+    runCounters();
+  } else {
+    revealEls.forEach(function (el, i) { el.style.transitionDelay = (i % 3) * 70 + 'ms'; });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    revealEls.forEach(function (el) { io.observe(el); });
+
+    var ioStats = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          statsPanel.classList.add('in');
+          dist.classList.add('in');
+          runCounters();
+          ioStats.unobserve(statsPanel);
+        }
+      });
+    }, { threshold: 0.35 });
+    ioStats.observe(statsPanel);
+  }
+
+  /* ---------- sticky toolbar shadow ---------- */
+  var toolbar = document.getElementById('toolbar');
+  var sentinel = document.getElementById('toolbarSentinel');
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        toolbar.classList.toggle('stuck', !entry.isIntersecting);
+      });
+    }, { threshold: 0 }).observe(sentinel);
+  }
+
+  /* ---------- back to top ---------- */
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () {
+    toTop.classList.toggle('show', window.scrollY > 600);
+  }, { passive: true });
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+  });
+})();
+</script>
+</body>
+</html>

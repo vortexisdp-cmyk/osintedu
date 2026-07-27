@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AUDIT//BENCH — Mobile-First QA Console</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/chakra-petch@latest/latin-500-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/chakra-petch@latest/latin-600-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/chakra-petch@latest/latin-700-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-sans@latest/latin-400-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-sans@latest/latin-500-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-sans@latest/latin-600-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/jetbrains-mono@latest/latin-400-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/jetbrains-mono@latest/latin-500-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/jetbrains-mono@latest/latin-700-normal.css" />
+<style>
+  :root{
+    --bg0:#0a0e14; --bg1:#0e141c; --panel:#121a24; --panel2:#0f1620;
+    --line:#1d2937; --line2:#27384a;
+    --ink:#e9eff5; --muted:#8b9cad; --dim:#5d6e7e;
+    --amber:#ffb454; --red:#ff5d6c; --green:#3ddc97; --cyan:#54c8f0; --magenta:#e07bd6;
+    --disp:'Chakra Petch',sans-serif; --body:'IBM Plex Sans',sans-serif; --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg0); color:var(--ink); font-family:var(--body);
+    font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+    position:relative; min-height:100vh;
+  }
+  /* ---------- ambient background ---------- */
+  .bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:
+      linear-gradient(rgba(84,200,240,.045) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(84,200,240,.045) 1px,transparent 1px);
+    background-size:46px 46px;
+    mask-image:radial-gradient(circle at 50% 30%,#000 0%,transparent 85%);}
+  .glow{position:fixed;border-radius:50%;filter:blur(80px);z-index:0;pointer-events:none;opacity:.5}
+  .g1{width:46vw;height:46vw;left:-12vw;top:-14vw;background:radial-gradient(circle,rgba(255,180,84,.22),transparent 70%);animation:drift1 26s ease-in-out infinite}
+  .g2{width:42vw;height:42vw;right:-12vw;bottom:-16vw;background:radial-gradient(circle,rgba(61,220,151,.18),transparent 70%);animation:drift2 32s ease-in-out infinite}
+  .g3{width:34vw;height:34vw;left:40%;top:30%;background:radial-gradient(circle,rgba(224,123,214,.12),transparent 70%);animation:drift3 38s ease-in-out infinite}
+  .scan{position:fixed;left:0;right:0;height:140px;z-index:0;pointer-events:none;opacity:.05;
+    background:linear-gradient(180deg,transparent,rgba(84,200,240,.6),transparent);animation:sweep 9s linear infinite}
+  .noise{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  @keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(6vw,5vh)}}
+  @keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-5vw,-4vh)}}
+  @keyframes drift3{0%,100%{transform:translate(0,0)}50%{transform:translate(-8vw,6vh)}}
+  @keyframes sweep{0%{top:-160px}100%{top:100vh}}
+
+  .wrap{position:relative;z-index:2}
+
+  /* ---------- top console bar ---------- */
+  .top{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:14px 18px;
+    border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(18,26,36,.96),rgba(14,20,28,.96));
+    position:sticky;top:0;z-index:30;backdrop-filter:blur(2px)}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .logo{width:38px;height:38px;flex:none}
+  .brand h1{font-family:var(--disp);font-weight:700;font-size:18px;letter-spacing:2px;margin:0;line-height:1}
+  .brand h1 b{color:var(--amber)}
+  .brand .sub{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-top:3px}
+  .target{flex:1 1 240px;display:flex;align-items:center;gap:8px;min-width:0;
+    background:#0a0f15;border:1px solid var(--line2);border-radius:8px;padding:0 12px;min-height:44px}
+  .target .lbl{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:1px;flex:none}
+  .target input{flex:1;background:transparent;border:0;outline:0;color:var(--cyan);
+    font-family:var(--mono);font-size:12.5px;min-width:0}
+  .meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .meta .kv{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.5px}
+  .meta .kv b{color:var(--ink)}
+  .leds{display:flex;align-items:center;gap:10px}
+  .led{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9.5px;letter-spacing:1px;color:var(--dim)}
+  .led i{width:8px;height:8px;border-radius:50%;background:#2a3a4a;display:inline-block;transition:.25s}
+  .led.on i{box-shadow:0 0 0 3px rgba(255,255,255,.04)}
+  .led.pwr i{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2.4s infinite}
+  .led.ovf.on i{background:var(--red);box-shadow:0 0 9px var(--red);animation:pulse 1s infinite}
+  .led.tgt.on i{background:var(--amber);box-shadow:0 0 9px var(--amber)}
+  .led.tgt.ok i{background:var(--green);box-shadow:0 0 9px var(--green)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  /* ---------- bench grid ---------- */
+  .bench{display:grid;grid-template-columns:1fr;gap:18px;padding:18px}
+  @media(min-width:1120px){.bench{grid-template-columns:minmax(0,1fr) 468px;align-items:start}}
+
+  .panel{position:relative;background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .panel::before{content:'';position:absolute;inset:0 0 auto 0;height:2px;opacity:.55}
+  .bay::before{background:linear-gradient(90deg,transparent,var(--amber),transparent)}
+  .rail::before{background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+  .bay{position:relative}
+  .corner{position:absolute;width:12px;height:12px;border:2px solid rgba(255,180,84,.5);z-index:3;pointer-events:none}
+  .corner.tl{top:8px;left:8px;border-right:0;border-bottom:0}
+  .corner.tr{top:8px;right:8px;border-left:0;border-bottom:0}
+  .corner.bl{bottom:8px;left:8px;border-right:0;border-top:0}
+  .corner.br{bottom:8px;right:8px;border-left:0;border-top:0}
+
+  .ph{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line)}
+  .ph .tag{font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+  .ph .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber)}
+  .rail .ph .dot{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+  .ph .right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .ph .pill{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--dim);
+    border:1px solid var(--line2);border-radius:20px;padding:4px 10px}
+
+  /* device bay controls */
+  .ctl{padding:14px 16px 6px;display:flex;flex-direction:column;gap:12px}
+  .presets{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--muted);
+    background:#0c1219;border:1px solid var(--line2);border-radius:7px;padding:0 12px;
+    min-height:40px;display:inline-flex;align-items:center;cursor:pointer;transition:.18s;user-select:none}
+  .chip:hover{border-color:var(--amber);color:var(--ink);transform:translateY(-1px)}
+  .chip:active{transform:translateY(0)}
+  .chip.on{background:rgba(255,180,84,.12);border-color:var(--amber);color:var(--amber)}
+  .slider-row{display:flex;align-items:center;gap:12px}
+  .slider-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:4px;
+    background:linear-gradient(90deg,var(--amber),var(--cyan));outline:0}
+  .slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+    background:#fff;border:3px solid var(--amber);cursor:pointer;box-shadow:0 0 10px rgba(255,180,84,.5)}
+  .slider-row input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--amber);cursor:pointer}
+  .wbox{display:flex;align-items:center;gap:5px;background:#0a0f15;border:1px solid var(--line2);border-radius:7px;padding:0 10px;min-height:40px}
+  .wbox input{width:62px;background:transparent;border:0;outline:0;color:var(--ink);font-family:var(--mono);font-size:13px;text-align:right}
+  .wbox span{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .class-tag{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--cyan);
+    border:1px solid rgba(84,200,240,.35);border-radius:5px;padding:4px 8px;white-space:nowrap}
+
+  /* stage / frame */
+  .stage{padding:6px 16px 4px;overflow-x:auto;overflow-y:hidden}
+  .rig{width:max-content;margin:0 auto}
+  .frame{border:1px solid var(--line2);border-radius:12px;background:#0a0e13;overflow:hidden;
+    box-shadow:0 24px 60px rgba(0,0,0,.5);transition:width .4s cubic-bezier(.22,1,.36,1)}
+  .chrome{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid #1c2836;background:#0e141b}
+  .chrome .d{width:9px;height:9px;border-radius:50%}
+  .chrome .d.r{background:#ff5f57}.chrome .d.y{background:#febc2e}.chrome .d.g{background:#28c840}
+  .chrome .addr{flex:1;min-width:0;background:#0a0f15;border-radius:5px;padding:5px 10px;
+    font-family:var(--mono);font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chrome .addr b{color:var(--dim)}
+  iframe{display:block;width:100%;height:clamp(430px,56vh,600px);border:0;background:#fff}
+  .ruler{position:relative;height:26px;margin-top:8px}
+  .ruler .tk{position:absolute;top:0;width:1px;height:7px;background:var(--line2)}
+  .ruler .tk.maj{height:11px;background:var(--dim)}
+  .ruler .tk span{position:absolute;top:12px;left:0;transform:translateX(-50%);
+    font-family:var(--mono);font-size:9px;color:var(--dim);white-space:nowrap}
+  .panhint{text-align:center;font-family:var(--mono);font-size:10px;color:var(--dim);
+    padding:2px 0 6px;letter-spacing:1px;display:none}
+  .panhint.show{display:block}
+
+  .actions{display:flex;flex-wrap:wrap;gap:8px;padding:10px 16px 4px}
+  .btn{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;
+    background:#0c1219;border:1px solid var(--line2);color:var(--ink);border-radius:8px;
+    padding:0 14px;min-height:44px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;transition:.16s}
+  .btn:hover{border-color:var(--cyan);transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+  .btn:active{transform:translateY(0) scale(.98)}
+  .btn svg{width:14px;height:14px}
+  .btn.amber{border-color:rgba(255,180,84,.5);color:var(--amber)}
+  .btn.amber:hover{background:rgba(255,180,84,.1)}
+  .btn.solid{background:linear-gradient(180deg,var(--amber),#e89a32);color:#1a1206;border-color:transparent;font-weight:700}
+  .btn.solid:hover{box-shadow:0 8px 22px rgba(255,180,84,.35)}
+  .btn.ghost{min-height:40px}
+
+  .console{margin:8px 16px 16px;background:#080c11;border:1px solid #16212e;border-radius:10px;
+    padding:10px 12px;height:152px;overflow-y:auto;font-family:var(--mono);font-size:11.5px;line-height:1.65}
+  .console::-webkit-scrollbar,.modal pre::-webkit-scrollbar,.stage::-webkit-scrollbar{width:8px;height:8px}
+  .console::-webkit-scrollbar-thumb,.modal pre::-webkit-scrollbar-thumb,.stage::-webkit-scrollbar-thumb{background:#23313f;border-radius:8px}
+  .ln{opacity:0;animation:lnin .3s forwards;white-space:pre-wrap;word-break:break-word}
+  .ln .t{color:#4d5d6d}
+  .ln.info{color:var(--cyan)}.ln.ok{color:var(--green)}.ln.warn{color:var(--amber)}.ln.err{color:var(--red)}.ln.mut{color:var(--dim)}
+  @keyframes lnin{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+
+  /* ---------- rail ---------- */
+  .steps{display:flex;flex-direction:column;gap:5px;padding:12px 14px 6px}
+  .step-it{display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid transparent;
+    border-radius:10px;cursor:pointer;min-height:50px;transition:.18s;position:relative}
+  .step-it:hover{background:#101822}
+  .step-it .num{font-family:var(--mono);font-size:12px;color:var(--dim);width:22px;flex:none}
+  .step-it .tt{font-family:var(--disp);font-weight:600;font-size:13.5px;letter-spacing:.4px;flex:1;min-width:0}
+  .step-it .sc{font-family:var(--mono);font-size:9.5px;color:var(--dim);display:block;margin-top:2px;letter-spacing:.5px}
+  .step-it .ic{width:18px;height:18px;flex:none;color:var(--dim)}
+  .step-it.locked{opacity:.55;cursor:not-allowed}
+  .step-it.current{border-color:var(--line2);background:#13202e;box-shadow:inset 3px 0 0 var(--amber)}
+  .step-it.current .num{color:var(--amber)}
+  .step-it.current .ic{color:var(--amber);animation:blink 1.4s infinite}
+  .step-it.done .ic{color:var(--green)}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+  .shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+
+  .prog{display:flex;gap:5px;padding:4px 14px 12px}
+  .prog i{flex:1;height:4px;border-radius:4px;background:var(--line);transition:.3s}
+  .prog i.fill{background:linear-gradient(90deg,var(--amber),#ff8a3d)}
+  .prog i.cur{background:linear-gradient(90deg,var(--cyan),var(--green));animation:pulse 1.6s infinite}
+
+  .sp{padding:14px 16px;border-top:1px solid var(--line)}
+  .sp h3{font-family:var(--disp);font-weight:700;font-size:18px;margin:0 0 6px;letter-spacing:.5px}
+  .sp .scope{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--cyan);
+    border:1px solid rgba(84,200,240,.35);border-radius:5px;padding:3px 8px;margin-bottom:8px}
+  .sp p.blurb{font-size:12.5px;color:var(--muted);margin:0}
+
+  .ck{display:flex;flex-direction:column;gap:8px;margin-top:13px}
+  .ck-it{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#0e151e;transition:.2s}
+  .ck-it.pass{border-left:3px solid var(--green)}
+  .ck-it.fail{border-left:3px solid var(--red);background:#160f12}
+  .ck-it.na{border-left:3px solid var(--dim);opacity:.7}
+  .ck-top{display:flex;align-items:flex-start;gap:9px}
+  .ck-id{font-family:var(--mono);font-size:10.5px;color:var(--amber);flex:none;margin-top:2px}
+  .ck-lbl{font-size:12.8px;flex:1;min-width:0}
+  .seg{display:flex;gap:3px;flex:none;background:#0a0f15;border:1px solid var(--line);border-radius:7px;padding:3px}
+  .seg button{font-family:var(--mono);font-size:9.5px;letter-spacing:.5px;color:var(--dim);background:transparent;
+    border:0;border-radius:5px;padding:0 8px;min-height:30px;cursor:pointer;transition:.15s}
+  .seg button:hover{color:var(--ink)}
+  .seg button.on[data-v=pass]{background:rgba(61,220,151,.16);color:var(--green)}
+  .seg button.on[data-v=fail]{background:rgba(255,93,108,.16);color:var(--red)}
+  .seg button.on[data-v=na]{background:rgba(141,156,173,.14);color:var(--muted)}
+  .ck-log{margin-top:9px;display:none}
+  .ck-it.fail .ck-log{display:block}
+  .mini{font-family:var(--mono);font-size:10px;letter-spacing:.5px;color:var(--red);background:rgba(255,93,108,.08);
+    border:1px solid rgba(255,93,108,.3);border-radius:6px;padding:7px 10px;min-height:34px;cursor:pointer;transition:.15s;width:100%}
+  .mini:hover{background:rgba(255,93,108,.16)}
+
+  /* logger */
+  .logger{margin-top:14px;border:1px dashed var(--line2);border-radius:12px;padding:13px;background:#0c121a}
+  .logger h4{font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;color:var(--cyan);margin:0 0 11px;text-transform:uppercase}
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+  .field label{font-family:var(--mono);font-size:10px;letter-spacing:.8px;color:var(--dim);text-transform:uppercase}
+  .field input,.field select,.field textarea{background:#0a0f15;border:1px solid var(--line2);border-radius:8px;
+    color:var(--ink);font-family:var(--body);font-size:13px;padding:10px 12px;outline:0;transition:.18s;width:100%}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(84,200,240,.12)}
+  .field textarea{resize:vertical;min-height:62px;font-family:var(--body)}
+  .field select{font-family:var(--mono);font-size:12px;cursor:pointer;min-height:44px}
+  .field.sev-crit select{border-color:var(--red);color:var(--red)}
+  .field.sev-major select{border-color:var(--amber);color:var(--amber)}
+  .field.sev-minor select{border-color:var(--cyan);color:var(--cyan)}
+  .logrow{display:flex;gap:8px;align-items:center}
+  .logrow .btn{flex:1;justify-content:center}
+  .cancel{font-family:var(--mono);font-size:10.5px;color:var(--dim);background:none;border:0;cursor:pointer;text-decoration:underline;display:none}
+  .cancel.show{display:inline}
+
+  /* issues */
+  .iss-h{font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin:16px 0 10px}
+  .issues{display:flex;flex-direction:column;gap:10px}
+  .iss{border:1px solid var(--line2);border-left:4px solid var(--sev);border-radius:10px;padding:11px 12px;
+    background:#0f1620;animation:pop .35s}
+  @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+  .iss .ih{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .iss .el{font-family:var(--disp);font-weight:600;font-size:13px;flex:1;min-width:0;word-break:break-word}
+  .sev-chip{font-family:var(--mono);font-size:9px;letter-spacing:.8px;text-transform:uppercase;
+    border-radius:5px;padding:3px 7px;flex:none;color:var(--sev);background:color-mix(in srgb,var(--sev) 14%,transparent);border:1px solid color-mix(in srgb,var(--sev) 40%,transparent)}
+  .step-chip{font-family:var(--mono);font-size:9px;color:var(--dim);border:1px solid var(--line2);border-radius:5px;padding:3px 6px;flex:none}
+  .iss .desc{font-size:12.5px;color:var(--ink);margin:0 0 8px}
+  .iss .rec{font-size:12px;color:var(--muted);background:#0b1119;border-radius:7px;padding:8px 10px;border-left:2px solid var(--cyan)}
+  .iss .rec b{font-family:var(--mono);font-size:9.5px;letter-spacing:1px;color:var(--cyan);display:block;margin-bottom:3px}
+  .iss .if{display:flex;align-items:center;gap:8px;margin-top:9px}
+  .iss .if .time{font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-right:auto}
+  .iconbtn{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;
+    background:#0a0f15;border:1px solid var(--line2);color:var(--muted);cursor:pointer;transition:.15s}
+  .iconbtn:hover{color:var(--ink);border-color:var(--cyan)}
+  .iconbtn.del:hover{color:var(--red);border-color:var(--red)}
+  .iconbtn svg{width:14px;height:14px}
+  .empty{font-family:var(--mono);font-size:11px;color:var(--dim);text-align:center;padding:14px;border:1px dashed var(--line);border-radius:10px}
+
+  /* stats */
+  .stats{display:flex;gap:8px;flex-wrap:wrap;padding:11px 14px;border-top:1px solid var(--line)}
+  .stat{font-family:var(--mono);font-size:10.5px;letter-spacing:.5px;border-radius:6px;padding:6px 10px;
+    border:1px solid var(--line2);background:#0c1219;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .stat b{font-size:13px}
+  .stat.crit b{color:var(--red)}.stat.major b{color:var(--amber)}.stat.minor b{color:var(--cyan)}.stat.cov b{color:var(--green)}
+
+  /* command bar */
+  .cmd{display:flex;gap:8px;align-items:center;padding:12px 14px;border-top:1px solid var(--line);background:#0b1119}
+  .cmd .pr{font-family:var(--mono);font-size:14px;color:var(--amber);flex:none}
+  .cmd input{flex:1;background:transparent;border:0;outline:0;color:var(--ink);font-family:var(--mono);
+    font-size:13px;min-height:44px;min-width:0}
+  .cmd input::placeholder{color:var(--dim)}
+  .cmd .btn{flex:none}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;z-index:60;background:rgba(4,7,11,.82);display:none;align-items:center;justify-content:center;padding:18px}
+  .overlay.open{display:flex;animation:fade .25s}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal{width:min(880px,96vw);max-height:88vh;display:flex;flex-direction:column;
+    background:var(--panel2);border:1px solid var(--line2);border-radius:14px;overflow:hidden}
+  .modal .mh{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .modal .mh .tag{font-family:var(--disp);font-weight:700;letter-spacing:1.5px;font-size:14px}
+  .modal .mh .v{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:4px 9px;border-radius:20px;margin-left:auto}
+  .modal pre{flex:1;overflow:auto;margin:0;padding:18px;font-family:var(--mono);font-size:12px;line-height:1.75;color:#cdd8e2;white-space:pre-wrap;word-break:break-word}
+  .modal pre h1,.modal pre h2,.modal pre h3{color:var(--amber)}
+  .modal .mf{display:flex;gap:8px;flex-wrap:wrap;padding:13px 18px;border-top:1px solid var(--line)}
+
+  .foot{font-family:var(--mono);font-size:10px;color:var(--dim);text-align:center;padding:18px;letter-spacing:.8px;position:relative;z-index:2}
+  .foot b{color:var(--muted)}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  :focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:4px}
+
+  @media(max-width:520px){
+    .top{padding:12px}
+    .bench{padding:12px;gap:14px}
+    .brand h1{font-size:16px}
+    .meta .kv{display:none}
+  }
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div>
+  <div class="scan"></div><div class="noise"></div>
+
+  <div class="wrap">
+    <!-- TOP CONSOLE BAR -->
+    <header class="top">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="13" stroke="#54c8f0" stroke-width="1.5" opacity=".55"/>
+          <circle cx="20" cy="20" r="6" stroke="#ffb454" stroke-width="1.5"/>
+          <path d="M20 2v7M20 31v7M2 20h7M31 20h7" stroke="#ffb454" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="20" cy="20" r="2" fill="#3ddc97"/>
+        </svg>
+        <div>
+          <h1>AUDIT<b>//</b>BENCH</h1>
+          <div class="sub">Mobile-First QA Sequence · v1.0</div>
+        </div>
+      </div>
+      <label class="target">
+        <span class="lbl">TARGET</span>
+        <input id="targetInput" type="url" spellcheck="false" placeholder="paste audited URL…" />
+      </label>
+      <div class="meta">
+        <span class="kv">SESSION <b id="sid">—</b></span>
+        <span class="kv" id="clock">00:00:00 UTC</span>
+        <div class="leds">
+          <span class="led pwr on"><i></i>PWR</span>
+          <span class="led ovf" id="ledOvf"><i></i>OVF</span>
+          <span class="led tgt" id="ledTgt"><i></i>TGT</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- BENCH -->
+    <main class="bench">
+      <!-- DEVICE BAY -->
+      <section class="panel bay reveal" aria-label="Device bay viewport simulator">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <div class="ph">
+          <span class="dot"></span><span class="tag">Device Bay</span>
+          <div class="right"><span class="pill" id="bayPill">specimen · RB-114</span></div>
+        </div>
+
+        <div class="ctl">
+          <div class="presets" id="presets"></div>
+          <div class="slider-row">
+            <input id="slider" type="range" min="320" max="1920" step="1" value="390" aria-label="Viewport width" />
+            <div class="wbox"><input id="wNum" type="number" min="320" max="1920" value="390" aria-label="Width value" /><span>px</span></div>
+            <span class="class-tag" id="classTag">MOBILE</span>
+          </div>
+        </div>
+
+        <div class="stage" id="stage">
+          <div class="rig" id="rig">
+            <div class="frame" id="frame" style="width:390px">
+              <div class="chrome">
+                <span class="d r"></span><span class="d y"></span><span class="d g"></span>
+                <span class="addr"><b>specimen://</b>orbit.coffee — reference build</span>
+              </div>
+              <iframe id="view" title="Audited specimen"></iframe>
+            </div>
+            <div class="ruler" id="ruler"></div>
+          </div>
+        </div>
+        <div class="panhint" id="panhint">◂ pan to inspect wide viewports ▸</div>
+
+        <div class="actions">
+          <button class="btn amber" id="scanBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M3 12h18"/></svg>
+            Scan touch targets
+          </button>
+          <button class="btn" id="ovfBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7h13M8 12h13M8 17h13M3 7h.01M3 12h.01M3 17h.01"/></svg>
+            Check overflow
+          </button>
+          <button class="btn ghost" id="reloadBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg>
+            Reload specimen
+          </button>
+        </div>
+
+        <div class="console" id="console" role="log" aria-live="polite" aria-label="Audit console feed"></div>
+      </section>
+
+      <!-- AUDIT RAIL -->
+      <section class="panel rail reveal" aria-label="Audit sequence">
+        <div class="ph">
+          <span class="dot"></span><span class="tag">Audit Sequence</span>
+          <div class="right"><span class="pill" id="stepPill">STEP 1 / 5</span></div>
+        </div>
+
+        <div class="steps" id="steps"></div>
+        <div class="prog" id="prog"></div>
+
+        <div class="sp" id="sp"></div>
+
+        <div class="stats" id="stats"></div>
+
+        <div class="cmd">
+          <span class="pr">❯</span>
+          <input id="cmdInput" type="text" spellcheck="false" autocomplete="off" placeholder="type 'Next' to advance · 'help' for commands" aria-label="Command line" />
+          <button class="btn solid" id="nextBtn">NEXT ▸</button>
+        </div>
+      </section>
+    </main>
+
+    <div class="foot">AUDIT//BENCH · sequential mobile-first QA · findings persist locally · <b>no data leaves this console</b></div>
+  </div>
+
+  <!-- REPORT MODAL -->
+  <div class="overlay" id="overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Audit report">
+      <div class="mh">
+        <span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)"></span>
+        <span class="tag">AUDIT REPORT</span>
+        <span class="v" id="verdictChip">—</span>
+      </div>
+      <pre id="reportPre"></pre>
+      <div class="mf">
+        <button class="btn solid" id="copyBtn">⧉ Copy markdown</button>
+        <button class="btn" id="dlBtn">↓ Download .md</button>
+        <button class="btn ghost" id="closeBtn" style="margin-left:auto">Close ✕</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- specimen (known-defect reference build) ---------------- */
+  var IMG = "https://image.qwenlm.ai/public_source/d724c3e5-b307-40f5-93ed-4af4cbad7355/1da10345d-2783-430d-bd6e-110621e4e72a.png";
+  var SPECIMEN = [
+    '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<title>ORBIT — Coffee at Escape Velocity</title><style>',
+    '*{box-sizing:border-box}body{margin:0;font-family:Helvetica,Arial,sans-serif;color:#1f242b;background:#fff}',
+    'header{position:sticky;top:0;z-index:5;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #ececec}',
+    '.logo{font-weight:800;letter-spacing:2px;font-size:14px}',
+    'nav ul{list-style:none;margin:0;padding:0;display:flex}',
+    'nav a{display:inline-block;font-size:12px;color:#8b8f96;text-decoration:none;padding:4px 7px}',
+    'nav a:hover{color:#c97b2d}',
+    '.drop{display:none;position:absolute;right:8px;top:34px;background:#fff;border:1px solid #eee;min-width:150px;z-index:9}',
+    'li{position:relative}li:hover .drop{display:block}',
+    '.drop a{display:block;padding:6px 12px}',
+    '.hero{background:#0e1526}',
+    '.hero img{display:block;width:560px;height:230px;object-fit:cover}',
+    '.hero h1{margin:14px 14px 6px;font-size:26px;color:#101828}',
+    '.hero p{margin:0 14px;font-size:13px;color:#9aa0a8}',
+    '.cta{margin:14px;background:#c97b2d;color:#fff;border:0;font-size:12px;padding:7px 14px;cursor:pointer}',
+    '.cta:hover{background:#b06a22}.cta:active{background:#96581a}',
+    '.cta[disabled]{opacity:.45;cursor:not-allowed}',
+    '.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px}',
+    '.card{border:1px solid #ececec;padding:12px}',
+    '.card h3{margin:0 0 6px;font-size:14px}.card p{margin:0;font-size:12px;color:#8b8f96}',
+    'table{border-collapse:collapse;min-width:640px;margin:14px;font-size:12px}',
+    'th,td{border:1px solid #ddd;padding:6px 10px;text-align:left}th{background:#f6f6f6}',
+    'form{margin:18px 14px;display:grid;gap:8px;max-width:420px}',
+    'label{font-size:11px;color:#666}',
+    'input{border:1px solid #cfd3d9;padding:6px 8px;font-size:13px}',
+    '::placeholder{color:#b9bec6}',
+    '.fine{font-size:10px;color:#c3c7cd;margin:14px}',
+    'footer{background:#10151d;color:#7d8590;font-size:11px;padding:18px 14px;margin-top:26px}',
+    '.cart{position:fixed;right:10px;bottom:10px;background:#101828;color:#fff;font-size:10px;padding:5px 9px;z-index:40;border-radius:3px}',
+    '@media (max-width:768px){.cols{grid-template-columns:1fr}}',
+    '</style></head><body>',
+    '<header><span class="logo">ORBIT</span><nav><ul>',
+    '<li><a href="#beans">Beans</a></li>',
+    '<li><a href="#subs">Subscriptions</a><span class="drop"><a href="#v60">V60 kit</a><a href="#cold">Cold brew</a></span></li>',
+    '<li><a href="#contact">Contact</a></li>',
+    '</ul></nav></header>',
+    '<section class="hero"><img src="'+IMG+'" alt="Orbit coffee banner"><h1>Coffee at escape velocity.</h1><p>Small-batch roasts, shipped within the launch window.</p><button class="cta">Order beans</button><button class="cta" disabled>Gift card</button></section>',
+    '<section class="cols" id="beans"><div class="card"><h3>Low-orbit blend</h3><p>Chocolate, hazelnut, low acidity. Our daily driver.</p></div><div class="card"><h3>Dark-side espresso</h3><p>Dense crema, bittersweet finish, zero gravity.</p></div></section>',
+    '<table><tr><th>Roast</th><th>Origin</th><th>Process</th><th>Batch</th><th>Ships</th></tr><tr><td>Low-orbit</td><td>Colombia</td><td>Washed</td><td>#A-114</td><td>Mon</td></tr><tr><td>Dark-side</td><td>Brazil</td><td>Natural</td><td>#A-115</td><td>Wed</td></tr><tr><td>Nebula decaf</td><td>Peru</td><td>Sugarcane</td><td>#A-116</td><td>Fri</td></tr></table>',
+    '<form id="wl"><label for="em">Email</label><input id="em" type="text" placeholder="you@earth.com"><label for="ph">Phone</label><input id="ph" type="text" placeholder="+1 555 000 1234"><button class="cta" type="submit">Join waitlist</button></form>',
+    '<p class="fine">By joining you agree to receive launch telemetry (emails).</p>',
+    '<footer>ORBIT Coffee Co. — brewed beyond the Kármán line.</footer>',
+    '<span class="cart">CART · 0</span>',
+    '<script>document.getElementById("wl").addEventListener("submit",function(e){e.preventDefault();});<\/script>',
+    '</body></html>'
+  ].join('');
+
+  /* ---------------- step definitions ---------------- */
+  var STEPS = [
+    {n:1,title:'Mobile Base Layout & Touch',scope:'320 – 430 px',blurb:'Verify the interface at phone widths — no overflow, valid touch targets, balanced spacing, and no hover-only critical paths.',
+      items:[['1.1','No horizontal scrolling at 320 px (scrollWidth ≤ clientWidth)'],
+             ['1.2','Text wraps correctly — no clipped or overflowing strings'],
+             ['1.3','No element overlap or overflow collisions'],
+             ['1.4','All interactive touch targets ≥ 44 × 44 CSS px'],
+             ['1.5','Spatial balance — no critical cramping or dead space'],
+             ['1.6','No critical interaction depends solely on :hover']]},
+    {n:2,title:'Progressive Enhancement',scope:'768 – 1920 px+',blurb:'Confirm the layout scales upward with mobile-first breakpoints, sound nav transformation, and clean media scaling.',
+      items:[['2.1','Breakpoints use min-width (mobile-first) logic'],
+             ['2.2','Mobile menu transitions cleanly to desktop navigation'],
+             ['2.3','Grid / Flex restructure preserves content hierarchy'],
+             ['2.4','Media scales without pixelation or aspect distortion'],
+             ['2.5','No oversized assets on large viewports']]},
+    {n:3,title:'Interactivity — Buttons, Forms, States',scope:'all breakpoints',blurb:'Inspect pseudo-class coverage, form validation, mobile keyboard optimization, and feedback loops.',
+      items:[['3.1',':hover and :active states present and visually distinct'],
+             ['3.2',':focus visible for keyboard navigation'],
+             ['3.3',':disabled styled and communicated to assistive tech'],
+             ['3.4','Form validation with clear, inline error messages'],
+             ['3.5','Placeholders readable and never replacing labels'],
+             ['3.6','Mobile keyboards optimized (correct type / inputmode)'],
+             ['3.7','Loading states on submit and heavy actions']]},
+    {n:4,title:'Styles, Design System & CSS Integrity',scope:'all breakpoints',blurb:'Audit typography, contrast, token consistency, specificity health, and stacking contexts.',
+      items:[['4.1','Type scale, line-height and weights are consistent'],
+             ['4.2','Text contrast meets WCAG AA (≥ 4.5:1)'],
+             ['4.3','Color palette and spacing follow coherent tokens'],
+             ['4.4','No specificity wars or !important abuse'],
+             ['4.5','Flexbox / Grid implemented appropriately'],
+             ['4.6','z-index stacking managed — no context leaks']]},
+    {n:5,title:'End-to-End Flow & UX Continuity',scope:'holistic',blurb:'Evaluate motion smoothness, navigation logic, history handling, and journey continuity.',
+      items:[['5.1','Animations hold 60 fps — no jank or dropped frames'],
+             ['5.2','State changes and page transitions are smooth'],
+             ['5.3','Menus, breadcrumbs and modals fully functional'],
+             ['5.4','Browser history respected (back / forward)'],
+             ['5.5','No dead ends or broken flows'],
+             ['5.6','Journey is logical from entry to conversion']]}
+  ];
+  var TOTAL_ITEMS = STEPS.reduce(function(a,s){return a+s.items.length;},0);
+  var PRESETS = [320,375,390,430,768,1024,1440,1920];
+
+  /* ---------------- state ---------------- */
+  var KEY = 'auditbench-v1';
+  var state = {maxStep:1, view:1, w:390, target:'', verdicts:{}, issues:[]};
+  function load(){ try{ var s=JSON.parse(localStorage.getItem(KEY)); if(s){ state=Object.assign(state,s);} }catch(e){} }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+  var SESSION = 'QA-' + (Date.now().toString(36).toUpperCase().slice(-4)) + Math.random().toString(36).slice(2,5).toUpperCase();
+
+  /* ---------------- refs ---------------- */
+  var $ = function(id){return document.getElementById(id);};
+  var view=$('view'), frame=$('frame'), rig=$('rig'), ruler=$('ruler'), stage=$('stage'), panhint=$('panhint');
+  var slider=$('slider'), wNum=$('wNum'), classTag=$('classTag'), presetsEl=$('presets');
+  var consoleEl=$('console'), ledOvf=$('ledOvf'), ledTgt=$('ledTgt');
+  var stepsEl=$('steps'), progEl=$('prog'), spEl=$('sp'), statsEl=$('stats');
+  var cmdInput=$('cmdInput'), nextBtn=$('nextBtn'), stepPill=$('stepPill');
+  var overlay=$('overlay'), reportPre=$('reportPre'), verdictChip=$('verdictChip');
+
+  var editingId=null, ovfState=null, scanBad=0;
+
+  /* ---------------- console log ---------------- */
+  function now(){ var d=new Date(); return d.toTimeString().slice(0,8); }
+  function log(msg, type){
+    var div=document.createElement('div');
+    div.className='ln '+(type||'mut');
+    div.innerHTML='<span class="t">'+now()+'</span> ▸ '+escapeHtml(msg);
+    consoleEl.appendChild(div);
+    while(consoleEl.children.length>90) consoleEl.removeChild(consoleEl.firstChild);
+    consoleEl.scrollTop=consoleEl.scrollHeight;
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+  /* ---------------- viewport class ---------------- */
+  function classOf(w){
+    if(w<480) return 'MOBILE';
+    if(w<768) return 'LG MOBILE';
+    if(w<1024) return 'TABLET';
+    if(w<1440) return 'DESKTOP';
+    return 'WIDE';
+  }
+
+  /* ---------------- ruler ---------------- */
+  function drawRuler(w){
+    ruler.style.width=w+'px';
+    ruler.innerHTML='';
+    var step = w<=600?50 : w<=1200?100 : 200;
+    var labelEvery = w<=600?100 : w<=1200?200 : 400;
+    for(var x=0;x<=w;x+=step){
+      var t=document.createElement('div');
+      var maj = (x%labelEvery===0);
+      t.className='tk'+(maj?' maj':'');
+      t.style.left=x+'px';
+      if(maj){ var s=document.createElement('span'); s.textContent=x; t.appendChild(s); }
+      ruler.appendChild(t);
+    }
+    if(w%labelEvery!==0){
+      var te=document.createElement('div'); te.className='tk maj'; te.style.left=w+'px';
+      var se=document.createElement('span'); se.textContent=w; te.appendChild(se); ruler.appendChild(te);
+    }
+  }
+
+  /* ---------------- width control ---------------- */
+  var ovfTimer=null;
+  function setW(w, fromUser){
+    w=Math.max(320,Math.min(1920,Math.round(w)));
+    state.w=w;
+    frame.style.width=w+'px';
+    rig.style.width=w+'px';
+    slider.value=w; wNum.value=w;
+    classTag.textContent=classOf(w);
+    Array.prototype.forEach.call(presetsEl.children,function(c){
+      c.classList.toggle('on', parseInt(c.dataset.w,10)===w);
+    });
+    drawRuler(w);
+    panhint.classList.toggle('show', stage.scrollWidth>stage.clientWidth+2);
+    if(fromUser) log('viewport set → '+w+' px  ['+classOf(w)+']','info');
+    clearTimeout(ovfTimer);
+    ovfTimer=setTimeout(function(){ overflowCheck(false); },360);
+    save();
+  }
+
+  /* ---------------- overflow check ---------------- */
+  function docReady(){
+    try{ return view.contentDocument && view.contentDocument.documentElement; }catch(e){ return null; }
+  }
+  function overflowCheck(verbose){
+    var root=docReady(); if(!root){ if(verbose) log('specimen not ready','warn'); return; }
+    var sw=root.scrollWidth, cw=root.clientWidth;
+    var ovf = sw > cw+1;
+    if(ovf!==ovfState){ ovfState=ovf; ledOvf.classList.toggle('on',ovf); }
+    if(verbose){
+      if(ovf) log('OVERFLOW @ '+state.w+'px — scrollWidth '+sw+'px > clientWidth '+cw+'px  (+'+(sw-cw)+'px)','warn');
+      else log('no horizontal overflow @ '+state.w+'px ✓','ok');
+    }
+  }
+
+  /* ---------------- touch target scan ---------------- */
+  function touchScan(){
+    var doc; try{ doc=view.contentDocument; }catch(e){ doc=null; }
+    if(!doc){ log('cannot access specimen document','err'); return; }
+    var old=doc.querySelectorAll('.qa-hit,.qa-bad');
+    Array.prototype.forEach.call(old,function(el){ el.classList.remove('qa-hit','qa-bad'); });
+    var st=doc.getElementById('qa-overlay-style'); if(st) st.parentNode.removeChild(st);
+    var style=doc.createElement('style'); style.id='qa-overlay-style';
+    style.textContent='.qa-hit{outline:2px solid rgba(61,220,151,.95)!important;outline-offset:1px}'+
+      '.qa-bad{outline:2px dashed rgba(255,93,108,.98)!important;outline-offset:1px;background:rgba(255,93,108,.10)!important}';
+    doc.head.appendChild(style);
+
+    var els=doc.querySelectorAll('a[href],button,input,select,textarea,label[for],[role=button]');
+    var bad=0, ok=0, minW=9999, minH=9999, minEl='';
+    Array.prototype.forEach.call(els,function(el){
+      var r=el.getBoundingClientRect();
+      if(r.width<1||r.height<1) return;
+      if(r.width<44||r.height<44){ el.classList.add('qa-bad'); bad++; if(r.width<minW){minW=r.width;} if(r.height<minH){minH=r.height;} minEl=el.tagName.toLowerCase(); }
+      else { el.classList.add('qa-hit'); ok++; }
+    });
+    scanBad=bad;
+    ledTgt.classList.remove('ok'); ledTgt.classList.toggle('on',bad>0);
+    if(bad===0 && (bad+ok)>0){ ledTgt.classList.add('ok'); }
+    if(bad+ok===0){ log('no interactive targets found in specimen','mut'); return; }
+    if(bad>0){
+      log('touch scan @ '+state.w+'px — '+bad+'/'+(bad+ok)+' targets UNDER 44×44 (min '+Math.round(minW)+'×'+Math.round(minH)+'px on <'+minEl+'>)','warn');
+      log('hint: mark 1.4 as FAIL and log an issue','mut');
+    } else {
+      log('touch scan @ '+state.w+'px — all '+(bad+ok)+' targets ≥ 44×44 ✓','ok');
+    }
+  }
+
+  /* ---------------- render: presets ---------------- */
+  function renderPresets(){
+    presetsEl.innerHTML='';
+    PRESETS.forEach(function(w){
+      var c=document.createElement('button'); c.className='chip'; c.type='button'; c.dataset.w=w; c.textContent=w;
+      c.addEventListener('click',function(){ setW(w,true); });
+      presetsEl.appendChild(c);
+    });
+  }
+
+  /* ---------------- render: step list ---------------- */
+  var ICON_LOCK='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  var ICON_PLAY='<svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  var ICON_DONE='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>';
+  var ICON_DOT='<svg class="ic" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>';
+
+  function renderSteps(){
+    stepsEl.innerHTML='';
+    STEPS.forEach(function(s){
+      var locked = s.n>state.maxStep;
+      var current = s.n===state.view;
+      var done = s.n<state.maxStep;
+      var div=document.createElement('div');
+      div.className='step-it'+(locked?' locked':'')+(current?' current':'')+(done&&!current?' done':'');
+      div.dataset.n=s.n;
+      var ic = locked?ICON_LOCK : (current?ICON_DOT : ICON_DONE);
+      div.innerHTML='<span class="num">'+('0'+s.n).slice(-2)+'</span>'+
+        '<span class="tt">'+s.title+'<span class="sc">'+s.scope+'</span></span>'+ic;
+      div.addEventListener('click',function(){
+        if(locked){ div.classList.add('shake'); div.addEventListener('animationend',function(){div.classList.remove('shake');},{once:true});
+          log('step '+s.n+' locked — type "Next" to advance the sequence','warn'); return; }
+        state.view=s.n; save(); renderAll();
+      });
+      stepsEl.appendChild(div);
+    });
+    // progress
+    progEl.innerHTML='';
+    for(var i=1;i<=5;i++){
+      var seg=document.createElement('i');
+      if(i<state.maxStep) seg.className='fill';
+      else if(i===state.maxStep) seg.className='cur';
+      progEl.appendChild(seg);
+    }
+    stepPill.textContent='STEP '+state.view+' / 5';
+  }
+
+  /* ---------------- render: step panel + checklist + logger ---------------- */
+  function renderStepPanel(){
+    var s=STEPS[state.view-1];
+    var html='<h3>'+s.title+'</h3><span class="scope">'+s.scope+'</span><p class="blurb">'+s.blurb+'</p>';
+    html+='<div class="ck">';
+    s.items.forEach(function(it){
+      var id=it[0], label=it[1];
+      var v=state.verdicts[id]||'';
+      html+='<div class="ck-it '+v+'">'+
+        '<div class="ck-top">'+
+          '<span class="ck-id">'+id+'</span>'+
+          '<span class="ck-lbl">'+escapeHtml(label)+'</span>'+
+          '<div class="seg" data-id="'+id+'">'+
+            '<button type="button" data-v="pass" class="'+(v==='pass'?'on':'')+'">PASS</button>'+
+            '<button type="button" data-v="fail" class="'+(v==='fail'?'on':'')+'">FAIL</button>'+
+            '<button type="button" data-v="na" class="'+(v==='na'?'on':'')+'">N/A</button>'+
+          '</div>'+
+        '</div>'+
+        '<div class="ck-log"><button type="button" class="mini" data-log="'+id+'">＋ Log issue for this check</button></div>'+
+      '</div>';
+    });
+    html+='</div>';
+    // logger
+    html+='<div class="logger" id="logger">'+
+      '<h4 id="logTitle">Issue logger — step '+s.n+'</h4>'+
+      '<div class="field"><label for="fEl">Element / Page</label><input id="fEl" type="text" placeholder="e.g. Hero &ldquo;Order beans&rdquo; button / #wl form" /></div>'+
+      '<div class="field" id="fSevWrap"><label for="fSev">Severity</label>'+
+        '<select id="fSev"><option value="Critical">Critical — blocks functionality</option><option value="Major" selected>Major — degrades UX</option><option value="Minor">Minor — cosmetic</option></select></div>'+
+      '<div class="field"><label for="fDesc">Description</label><textarea id="fDesc" placeholder="Clear explanation of the defect…"></textarea></div>'+
+      '<div class="field"><label for="fRec">Recommendation</label><textarea id="fRec" placeholder="Specific technical or logical fix…"></textarea></div>'+
+      '<div class="logrow"><button type="button" class="btn solid" id="logSubmit">⊕ Log issue</button>'+
+        '<button type="button" class="cancel" id="logCancel">cancel edit</button></div>'+
+    '</div>';
+    // issues
+    html+='<div class="iss-h">Findings — step '+s.n+'</div><div class="issues" id="issList"></div>';
+    spEl.innerHTML=html;
+
+    // wire verdict segments
+    Array.prototype.forEach.call(spEl.querySelectorAll('.seg'),function(seg){
+      seg.addEventListener('click',function(e){
+        var b=e.target.closest('button'); if(!b) return;
+        var id=seg.dataset.id, val=b.dataset.v;
+        state.verdicts[id]=val; save();
+        renderStepPanel(); renderStats();
+        if(val==='fail') log(id+' marked FAIL','warn');
+        else if(val==='pass') log(id+' passed','ok');
+        else log(id+' set N/A','mut');
+      });
+    });
+    Array.prototype.forEach.call(spEl.querySelectorAll('.mini'),function(b){
+      b.addEventListener('click',function(){
+        var id=b.dataset.log;
+        var lbl=(STEPS[state.view-1].items.filter(function(x){return x[0]===id;})[0]||[])[1]||id;
+        var fEl=$('fEl'); fEl.value='Step '+state.view+' · '+id+' — '+lbl;
+        $('fDesc').focus();
+        $('logger').scrollIntoView({behavior:'smooth',block:'center'});
+      });
+    });
+    wireLogger();
+    renderIssues();
+  }
+
+  function wireLogger(){
+    var sev=$('fSev'), wrap=$('fSevWrap');
+    function syncSev(){ wrap.className='field sev-'+sev.value.toLowerCase(); }
+    sev.addEventListener('change',syncSev); syncSev();
+    $('logSubmit').addEventListener('click',submitIssue);
+    $('logCancel').addEventListener('click',function(){ resetLogger(); });
+  }
+  function resetLogger(){
+    editingId=null;
+    $('fEl').value=''; $('fDesc').value=''; $('fRec').value=''; $('fSev').value='Major';
+    $('fSevWrap').className='field sev-major';
+    $('logSubmit').textContent='⊕ Log issue';
+    $('logTitle').textContent='Issue logger — step '+state.view;
+    $('logCancel').classList.remove('show');
+  }
+  function submitIssue(){
+    var el=$('fEl').value.trim(), desc=$('fDesc').value.trim(), rec=$('fRec').value.trim(), sev=$('fSev').value;
+    if(!el){ shake($('fEl')); log('element/page is required','err'); return; }
+    if(!desc){ shake($('fDesc')); log('description is required','err'); return; }
+    if(editingId){
+      var it=state.issues.filter(function(x){return x.id===editingId;})[0];
+      if(it){ it.el=el; it.sev=sev; it.desc=desc; it.rec=rec; }
+      log('issue updated','ok');
+    } else {
+      state.issues.push({id:Date.now(), step:state.view, el:el, sev:sev, desc:desc, rec:rec, ts:new Date().toISOString()});
+      log('issue logged ['+sev.toUpperCase()+'] → '+el,'ok');
+    }
+    save(); resetLogger(); renderIssues(); renderStats(); renderSteps();
+  }
+  function shake(node){ node.classList.add('shake'); node.addEventListener('animationend',function(){node.classList.remove('shake');},{once:true}); node.focus(); }
+
+  /* ---------------- render: issues ---------------- */
+  var ICO_EDIT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+  var ICO_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
+  function renderIssues(){
+    var list=$('issList'); if(!list) return;
+    var arr=state.issues.filter(function(i){return i.step===state.view;});
+    if(arr.length===0){ list.innerHTML='<div class="empty">No findings logged for this step — record verdicts above.</div>'; return; }
+    list.innerHTML='';
+    arr.forEach(function(i){
+      var color = i.sev==='Critical'?'var(--red)':i.sev==='Major'?'var(--amber)':'var(--cyan)';
+      var t=new Date(i.ts);
+      var card=document.createElement('div');
+      card.className='iss'; card.style.setProperty('--sev',color);
+      card.innerHTML=
+        '<div class="ih"><span class="el">'+escapeHtml(i.el)+'</span>'+
+          '<span class="sev-chip">'+i.sev+'</span><span class="step-chip">S'+i.step+'</span></div>'+
+        '<p class="desc">'+escapeHtml(i.desc)+'</p>'+
+        (i.rec?'<div class="rec"><b>RECOMMENDATION ▸</b>'+escapeHtml(i.rec)+'</div>':'')+
+        '<div class="if"><span class="time">'+t.toLocaleString()+'</span>'+
+          '<button class="iconbtn" data-edit="'+i.id+'" title="Edit">'+ICO_EDIT+'</button>'+
+          '<button class="iconbtn del" data-del="'+i.id+'" title="Delete">'+ICO_DEL+'</button></div>';
+      list.appendChild(card);
+    });
+    list.querySelectorAll('[data-edit]').forEach(function(b){
+      b.addEventListener('click',function(){ startEdit(parseInt(b.dataset.edit,10)); });
+    });
+    list.querySelectorAll('[data-del]').forEach(function(b){
+      b.addEventListener('click',function(){
+        var id=parseInt(b.dataset.del,10);
+        state.issues=state.issues.filter(function(x){return x.id!==id;});
+        save(); renderIssues(); renderStats(); renderSteps(); log('issue deleted','mut');
+      });
+    });
+  }
+  function startEdit(id){
+    var it=state.issues.filter(function(x){return x.id===id;})[0]; if(!it) return;
+    editingId=id;
+    $('fEl').value=it.el; $('fDesc').value=it.desc; $('fRec').value=it.rec; $('fSev').value=it.sev;
+    $('fSevWrap').className='field sev-'+it.sev.toLowerCase();
+    $('logSubmit').textContent='✓ Update issue';
+    $('logTitle').textContent='Editing issue — step '+it.step;
+    $('logCancel').classList.add('show');
+    $('logger').scrollIntoView({behavior:'smooth',block:'center'});
+    $('fEl').focus();
+  }
+
+  /* ---------------- render: stats ---------------- */
+  function renderStats(){
+    var c=0,m=0,mn=0;
+    state.issues.forEach(function(i){ if(i.sev==='Critical')c++; else if(i.sev==='Major')m++; else mn++; });
+    var rec=Object.keys(state.verdicts).length;
+    statsEl.innerHTML=
+      '<span class="stat crit">CRIT <b>'+c+'</b></span>'+
+      '<span class="stat major">MAJOR <b>'+m+'</b></span>'+
+      '<span class="stat minor">MINOR <b>'+mn+'</b></span>'+
+      '<span class="stat cov">CHECKS <b>'+rec+'/'+TOTAL_ITEMS+'</b></span>';
+  }
+
+  /* ---------------- sequence control ---------------- */
+  function nextStep(){
+    if(state.maxStep<5){
+      state.maxStep++; state.view=state.maxStep; save();
+      log('▶ advancing to STEP '+state.maxStep+' — '+STEPS[state.maxStep-1].title,'ok');
+      renderAll();
+      spEl.scrollIntoView({behavior:'smooth',block:'start'});
+    } else {
+      log('sequence complete — generating final report','ok');
+      openReport();
+    }
+  }
+  function backStep(){
+    if(state.view>1){ state.view--; save(); log('◂ reviewing STEP '+state.view,'info'); renderAll(); }
+  }
+  function gotoStep(n){
+    n=parseInt(n,10);
+    if(isNaN(n)||n<1||n>5){ log('invalid step number','err'); return; }
+    if(n>state.maxStep){ log('step '+n+' not yet unlocked','warn'); return; }
+    state.view=n; save(); log('jumped to STEP '+n,'info'); renderAll();
+  }
+
+  /* ---------------- command parser ---------------- */
+  function runCommand(raw){
+    var cmd=raw.trim(); if(!cmd) return;
+    var lc=cmd.toLowerCase(); var parts=lc.split(/\s+/);
+    log('$ '+cmd,'mut');
+    if(lc==='next'||lc==='n'||lc==='continue'){ nextStep(); }
+    else if(lc==='back'||lc==='b'||lc==='prev'){ backStep(); }
+    else if(parts[0]==='step'||parts[0]==='s'){ gotoStep(parts[1]); }
+    else if(/^\d$/.test(lc)){ gotoStep(lc); }
+    else if(lc==='report'||lc==='export'||lc==='final'||lc==='finalize'){ openReport(); }
+    else if(lc==='scan'){ touchScan(); }
+    else if(lc==='overflow'||lc==='ovf'){ overflowCheck(true); }
+    else if(lc==='clear'||lc==='cls'){ consoleEl.innerHTML=''; log('console cleared','mut'); }
+    else if(lc==='reset'){ log('resetting session…','warn'); localStorage.removeItem(KEY); setTimeout(function(){location.reload();},400); }
+    else if(lc==='help'||lc==='?'){ printHelp(); }
+    else { log('unknown command "'+cmd+'" — try: next, back, step N, scan, overflow, report, help','err'); }
+    cmdInput.value='';
+  }
+  function printHelp(){
+    log('── COMMANDS ──','info');
+    log('next / n        advance to next step (gated sequence)','mut');
+    log('back / b        review previous step','mut');
+    log('step N          jump to unlocked step N','mut');
+    log('scan            run 44px touch-target scan on specimen','mut');
+    log('overflow        run horizontal-overflow check','mut');
+    log('report          generate + export the audit report','mut');
+    log('clear / reset   clear console / wipe session','mut');
+  }
+
+  /* ---------------- report ---------------- */
+  function overallVerdict(){
+    var c=state.issues.some(function(i){return i.sev==='Critical';});
+    var m=state.issues.some(function(i){return i.sev==='Major';});
+    var mn=state.issues.some(function(i){return i.sev==='Minor';});
+    if(c) return {t:'FAIL — CRITICAL DEFECTS', col:'var(--red)'};
+    if(m) return {t:'CONDITIONAL PASS', col:'var(--amber)'};
+    if(mn) return {t:'PASS WITH MINOR NOTES', col:'var(--cyan)'};
+    return {t:'PASS', col:'var(--green)'};
+  }
+  function buildReport(){
+    var L=[], P=function(x){L.push(x);};
+    var v=overallVerdict();
+    P('# MOBILE-FIRST QA AUDIT — REPORT');
+    P('');
+    P('- **Target:** '+(state.target||'(not set)'));
+    P('- **Date:** '+new Date().toUTCString());
+    P('- **Session:** '+SESSION);
+    P('- **Method:** 5-step sequential sequence, mobile-first (320 px → 1920 px+)');
+    P('- **Overall verdict:** '+v.t);
+    P('');
+    STEPS.forEach(function(s){
+      P('## STEP '+s.n+' — '+s.title.toUpperCase());
+      P('Scope: '+s.scope);
+      P('');
+      P('| # | Check | Verdict |');
+      P('|---|-------|---------|');
+      s.items.forEach(function(it){
+        var vv=state.verdicts[it[0]];
+        P('| '+it[0]+' | '+it[1]+' | '+(vv?vv.toUpperCase():'—')+' |');
+      });
+      P('');
+      var iss=state.issues.filter(function(i){return i.step===s.n;});
+      if(iss.length){
+        P('### Issues ('+iss.length+')');
+        P('');
+        iss.forEach(function(i,idx){
+          P('**Issue '+s.n+'.'+(idx+1)+'**');
+          P('');
+          P('- **Element/Page:** '+i.el);
+          P('- **Severity:** '+i.sev);
+          P('- **Description:** '+i.desc);
+          P('- **Recommendation:** '+(i.rec||'—'));
+          P('');
+        });
+      } else { P('_No issues logged for this step._'); P(''); }
+    });
+    var c=0,m=0,mn=0;
+    state.issues.forEach(function(i){ if(i.sev==='Critical')c++; else if(i.sev==='Major')m++; else mn++; });
+    var rec=Object.keys(state.verdicts).length;
+    P('## SUMMARY');
+    P('');
+    P('- Critical: **'+c+'** · Major: **'+m+'** · Minor: **'+mn+'** · Total findings: **'+state.issues.length+'**');
+    P('- Checklist coverage: **'+rec+' / '+TOTAL_ITEMS+'** verdicts recorded');
+    P('- Final verdict: **'+v.t+'**');
+    P('');
+    P('---');
+    P('_Generated by AUDIT//BENCH — mobile-first QA console._');
+    return {md:L.join('\n'), verdict:v};
+  }
+  function openReport(){
+    var r=buildReport();
+    reportPre.textContent=r.md;
+    verdictChip.textContent=r.verdict.t;
+    verdictChip.style.color=r.verdict.col;
+    verdictChip.style.border='1px solid '+r.verdict.col;
+    verdictChip.style.background='color-mix(in srgb,'+r.verdict.col+' 14%,transparent)';
+    overlay.classList.add('open');
+  }
+  function closeReport(){ overlay.classList.remove('open'); }
+
+  $('copyBtn').addEventListener('click',function(){
+    var txt=reportPre.textContent; var btn=this;
+    function done(){ var o=btn.textContent; btn.textContent='✓ Copied'; setTimeout(function(){btn.textContent=o;},1300); }
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done,function(){fallbackCopy(txt);done();}); }
+    else { fallbackCopy(txt); done(); }
+  });
+  function fallbackCopy(txt){ var ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); }
+  $('dlBtn').addEventListener('click',function(){
+    var blob=new Blob([reportPre.textContent],{type:'text/markdown'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='audit-report.md';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+    log('report downloaded as audit-report.md','ok');
+  });
+  $('closeBtn').addEventListener('click',closeReport);
+  overlay.addEventListener('click',function(e){ if(e.target===overlay) closeReport(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&overlay.classList.contains('open')) closeReport(); });
+
+  /* ---------------- wire controls ---------------- */
+  slider.addEventListener('input',function(){ setW(parseInt(slider.value,10),true); });
+  wNum.addEventListener('change',function(){ setW(parseInt(wNum.value,10)||390,true); });
+  wNum.addEventListener('input',function(){ var v=parseInt(wNum.value,10); if(!isNaN(v)){ frame.style.width=Math.max(320,Math.min(1920,v))+'px'; } });
+  $('scanBtn').addEventListener('click',touchScan);
+  $('ovfBtn').addEventListener('click',function(){ overflowCheck(true); });
+  $('reloadBtn').addEventListener('click',function(){ view.srcdoc=SPECIMEN; log('specimen reloaded','info'); });
+  nextBtn.addEventListener('click',nextStep);
+  cmdInput.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); runCommand(cmdInput.value); } });
+  $('targetInput').addEventListener('input',function(){ state.target=this.value; save(); });
+
+  /* ---------------- master render ---------------- */
+  function renderAll(){ renderSteps(); renderStepPanel(); renderStats();
+    nextBtn.textContent = state.maxStep>=5 ? 'FINALIZE ▸' : 'NEXT ▸';
+  }
+
+  /* ---------------- clock ---------------- */
+  function tickClock(){ $('clock').textContent=new Date().toUTCString().slice(17,25)+' UTC'; }
+
+  /* ---------------- reveal ---------------- */
+  function initReveal(){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} }); },{threshold:.1});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  }
+
+  /* ---------------- boot ---------------- */
+  function boot(){
+    load();
+    $('sid').textContent=SESSION;
+    $('targetInput').value=state.target||'';
+    renderPresets();
+    setW(state.w||390,false);
+    view.srcdoc=SPECIMEN;
+    view.addEventListener('load',function(){
+      setTimeout(function(){ overflowCheck(false); },120);
+    });
+    renderAll();
+    tickClock(); setInterval(tickClock,1000);
+    initReveal();
+    window.addEventListener('resize',function(){ panhint.classList.toggle('show', stage.scrollWidth>stage.clientWidth+2); });
+
+    log('AUDIT//BENCH v1.0 online — sequential mobile-first QA','info');
+    log('specimen loaded: orbit.coffee · reference build RB-114 (known-defect sample)','info');
+    log('start at STEP 1 (320–430 px) — record verdicts, log findings','mut');
+    log('type "Next" or press NEXT ▸ to advance · "help" for commands','ok');
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
